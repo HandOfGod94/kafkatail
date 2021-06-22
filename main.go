@@ -18,6 +18,11 @@ func main() {
 				Usage:    "list of kafka `bootstrap_servers` separated by comma",
 				Required: true,
 			},
+			&cli.StringFlag{
+				Name:     "topic",
+				Usage:    "`topic` whose message you want to tail",
+				Required: true,
+			},
 		},
 		Action: func(c *cli.Context) error {
 			fmt.Println("Hello World")

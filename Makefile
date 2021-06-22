@@ -11,6 +11,7 @@ quality-check:
 	gocognit -over 15 .
 
 test:
+	go install
 	go test -cover -count=1 -coverprofile=coverage.out -race ./...
 	go tool cover -func=coverage.out
 
