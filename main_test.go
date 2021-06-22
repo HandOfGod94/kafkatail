@@ -18,6 +18,7 @@ func TestRequiredArgs(t *testing.T) {
 	}{
 		{"", `"bootstrap_servers", "topic" not set`, true},
 		{"--bootstrap_servers=1.1.1.1:9093 --topic=test", "Hello World", false},
+		{"--bootstrap_servers=1.1.1.1:9093 --topic=test --wire_format=foo", "must be 'avro', 'plaintext', 'proto'", true},
 	}
 
 	for _, tc := range testCases {

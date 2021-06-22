@@ -17,14 +17,32 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
+	"github.com/thediveo/enumflag"
+)
+
+type WireFormat enumflag.Flag
+
+const (
+	PlainTextFormat WireFormat = iota
+	ProtoFormat
+	AvroFormat
 )
 
 var (
 	bootstrapServers []string
 	topic            string
 	groupID          string
+	wireForamt       WireFormat
 )
+
+
+var WireFormatIDs = map[WireFormat][]string{
+	PlainTextFormat: {"plaintext"},
+	ProtoFormat:     {"proto"},
+	AvroFormat:      {"avro"},
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -45,6 +63,12 @@ func init() {
 	rootCmd.Flags().StringSliceVar(&bootstrapServers, "bootstrap_servers", []string{}, "list of kafka `bootstrap_servers` separated by comma")
 	rootCmd.Flags().StringVar(&topic, "topic", "", "`topic` whose message you want to tail")
 	rootCmd.Flags().StringVar(&groupID, "group_id", "", "kafka consumer `group_id` to be used for subscribing to topic")
+	rootCmd.Flags().Var(enumflag.New(&wireForamt, "wire_format", WireFormatIDs, enumflag.EnumCaseSensitive),
+		"wire_format",
+		"Wire format of messages in topic",
+	)
+
+	rootCmd.Flags().Lookup("wire_format").NoOptDefVal = "plaintext"
 
 	rootCmd.MarkFlagRequired("bootstrap_servers")
 	rootCmd.MarkFlagRequired("topic")
