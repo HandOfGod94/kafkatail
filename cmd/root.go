@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
 )
@@ -51,6 +52,7 @@ var rootCmd = &cobra.Command{
 	Long: `Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
 on console`,
 	Run: func(cmd *cobra.Command, args []string) {
+		consumer.Options{GroupID: groupID}.New(bootstrapServers, topic)
 		fmt.Printf("Hello World")
 	},
 }
