@@ -16,7 +16,7 @@ func TestRequiredArgs(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"", `"bootstrap_servers, topic" not set`, true},
+		{"", `"bootstrap_servers", "topic" not set`, true},
 		{"--bootstrap_servers=1.1.1.1:9093 --topic=test", "Hello World", false},
 	}
 
