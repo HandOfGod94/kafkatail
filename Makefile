@@ -17,6 +17,9 @@ test:
 tidy:
 	go mod tidy -v
 
+run: dev
+	./out/$(APP_NAME)
+
 dev:
 	go build -v -o out/$(APP_NAME) main.go
 
