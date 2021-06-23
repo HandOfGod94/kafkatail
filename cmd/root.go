@@ -16,7 +16,9 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/spf13/cobra"
@@ -38,7 +40,6 @@ var (
 	wireForamt       WireFormat
 )
 
-
 var WireFormatIDs = map[WireFormat][]string{
 	PlainTextFormat: {"plaintext"},
 	ProtoFormat:     {"proto"},
@@ -52,8 +53,20 @@ var rootCmd = &cobra.Command{
 	Long: `Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
 on console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		consumer.Options{GroupID: groupID}.New(bootstrapServers, topic)
-		fmt.Printf("Hello World")
+		msgChan, errChan :=
+			consumer.Options{
+				GroupID: groupID,
+			}.New(bootstrapServers, topic).
+				Consume(context.Background())
+
+		for {
+			select {
+			case err := <-errChan:
+				log.Fatalf("failed to read messages from kafka. error: %v", err)
+			case msg := <-msgChan:
+				fmt.Println(msg)
+			}
+		}
 	},
 }
 
