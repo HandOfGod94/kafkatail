@@ -12,7 +12,7 @@ quality-check:
 
 test:
 	go install
-	go test -cover -count=1 -coverprofile=coverage.out -race ./...
+	go test -timeout 30s -cover -count=1 -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 
 tidy:
