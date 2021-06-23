@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/segmentio/kafka-go"
-	"gopkg.in/tomb.v2"
 )
 
 type kafkaConsumer struct {
@@ -44,8 +43,7 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan err
 		Topic:   kc.topic,
 	})
 
-	t, tCtx := tomb.WithContext(ctx)
-	t.Go(func() error {
+	go func() {
 		for {
 			m, err := r.ReadMessage(ctx)
 			if err != nil {
@@ -53,7 +51,7 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan err
 				break
 			}
 			select {
-			case <-tCtx.Done():
+			case <-ctx.Done():
 				break
 			default:
 				outChan <- string(m.Value)
@@ -64,8 +62,7 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan err
 		}
 		close(outChan)
 		close(errorChan)
-		return nil
-	})
+	}()
 
 	return outChan, errorChan
 }
