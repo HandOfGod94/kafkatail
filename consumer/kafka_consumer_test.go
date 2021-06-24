@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const defaultTimeout = 2 * time.Second
+const defaultTimeout = 3 * time.Second
 
 var kafkaRawClient = kafka.Client{
 	Addr:      kafka.TCP("localhost:9093"),
@@ -76,6 +76,31 @@ func TestConsume_Success(t *testing.T) {
 
 	deleteTopic(ctx, topic)
 	assert.Equal(t, sent, received)
+}
+
+func TestConsume_WithMultipleMessages(t *testing.T) {
+	broker := []string{"localhost:9093"}
+	topic := "test_topic"
+	sent1 := "hello"
+	sent2 := "world"
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+	err := createTopic(ctx, topic)
+	if err != nil {
+		log.Fatal("failed to create topic:", err)
+	}
+
+	c := consumer.New(broker, topic)
+	msgChan, _ := c.Consume(ctx)
+
+	sendMessage(ctx, broker, topic, sent1)
+	sendMessage(ctx, broker, topic, sent2)
+	received1 := <-msgChan
+	received2 := <-msgChan
+
+	deleteTopic(ctx, topic)
+	assert.Equal(t, sent1, received1)
+	assert.Equal(t, sent2, received2)
 }
 
 func sendMessage(ctx context.Context, brokers []string, topic, message string) {

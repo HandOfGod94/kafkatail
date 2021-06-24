@@ -19,6 +19,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/spf13/cobra"
@@ -53,6 +56,8 @@ var rootCmd = &cobra.Command{
 	Long: `Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
 on console`,
 	Run: func(cmd *cobra.Command, args []string) {
+		stopChan := make(chan os.Signal, 2)
+		signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 		msgChan, errChan :=
 			consumer.Options{
 				GroupID: groupID,
@@ -65,6 +70,9 @@ on console`,
 				log.Fatalf("failed to read messages from kafka. error: %v", err)
 			case msg := <-msgChan:
 				fmt.Println(msg)
+			case <-stopChan:
+				log.Printf("Stopping application")
+				os.Exit(0)
 			}
 		}
 	},

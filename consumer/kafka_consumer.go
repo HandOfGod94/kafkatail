@@ -43,16 +43,23 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan err
 		Topic:   kc.topic,
 	})
 
-	go func() {
-		for {
+	// TODO: move offset to options
+	err := r.SetOffset(kafka.LastOffset)
+	if err != nil {
+		log.Fatal("failed to seek offeset to end:", err)
+	}
+
+	go func(ctx context.Context) {
+		loop := true
+		for loop {
 			m, err := r.ReadMessage(ctx)
 			if err != nil {
 				errorChan <- err
-				break
+				loop = false
 			}
 			select {
 			case <-ctx.Done():
-				break
+				loop = false
 			default:
 				outChan <- string(m.Value)
 			}
@@ -62,7 +69,7 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan err
 		}
 		close(outChan)
 		close(errorChan)
-	}()
+	}(ctx)
 
 	return outChan, errorChan
 }

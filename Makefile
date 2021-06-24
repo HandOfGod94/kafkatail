@@ -31,8 +31,8 @@ fmt:
 	go fmt ./...
 
 setup-tools:
-	go install github.com/fzipp/gocyclo/cmd/gocyclo
+	go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 	go install github.com/vektra/mockery/v2@v2.5.1
-	go install github.com/uudashr/gocognit/cmd/gocognit
-	go install honnef.co/go/tools/cmd/staticcheck
-	go install -u github.com/mcubik/goverreport
+	go install github.com/uudashr/gocognit/cmd/gocognit@latest
+	go install honnef.co/go/tools/cmd/staticcheck@latest
+	go install github.com/mcubik/goverreport@latest
