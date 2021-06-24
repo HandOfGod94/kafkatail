@@ -22,10 +22,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
+	"gopkg.in/tomb.v2"
 )
 
 type WireFormat enumflag.Flag
@@ -56,18 +58,22 @@ var rootCmd = &cobra.Command{
 	Long: `Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
 on console`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// TODO: make timeouts configurable
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		tm, tctx := tomb.WithContext(ctx)
 		stopChan := make(chan os.Signal, 2)
 		signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-		msgChan, errChan :=
+		msgChan :=
 			consumer.Options{
 				GroupID: groupID,
 			}.New(bootstrapServers, topic).
-				Consume(context.Background())
+				Consume(tm, tctx)
 
 		for {
 			select {
-			case err := <-errChan:
-				log.Fatalf("failed to read messages from kafka. error: %v", err)
+			case <-tm.Dead():
+				log.Fatalf("failed to read messages from kafka. error: %v", tm.Err())
 			case msg := <-msgChan:
 				fmt.Println(msg)
 			case <-stopChan:

@@ -9,9 +9,10 @@ import (
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/tomb.v2"
 )
 
-const defaultTimeout = 3 * time.Second
+const defaultTimeout = 5 * time.Second
 
 var kafkaRawClient = kafka.Client{
 	Addr:      kafka.TCP("localhost:9093"),
@@ -26,19 +27,22 @@ func TestConsume_Errors(t *testing.T) {
 		topic            string
 		expectedErr      string
 	}{
-		{"with invalid brokers config", []string{"foo:9093"}, "test_topic", "no such host"},
-		{"with invalid topic", []string{"localhost:9093"}, "nonexistent_topic", "deadline exceeded"},
+		{"with invalid brokers config", []string{"foo:9093"}, "test_topic", "lookup foo: no such host"},
+		{"with invalid topic", []string{"localhost:9093"}, "nonexistent_topic", context.DeadlineExceeded.Error()},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			c := consumer.New(tc.bootstrapServers, tc.topic)
 			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-			_, errorChan := c.Consume(ctx)
-			err := <-errorChan
+			tmb, tctx := tomb.WithContext(ctx)
+
+			c.Consume(tmb, tctx)
+
+			<-tmb.Dead()
 
 			cancel()
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), tc.expectedErr)
+			assert.False(t, tmb.Alive())
+			assert.Contains(t, tmb.Err().Error(), tc.expectedErr)
 		})
 	}
 }
@@ -48,13 +52,15 @@ func TestReadTimeout(t *testing.T) {
 	topic := "test_topic"
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
+	tmb, tctx := tomb.WithContext(ctx)
 
 	c := consumer.New(broker, topic)
-	_, errChan := c.Consume(ctx)
-	err := <-errChan
+	c.Consume(tmb, tctx)
 
-	assert.Error(t, err)
-	assert.ErrorIs(t, err, context.DeadlineExceeded)
+	<-tmb.Dead()
+
+	assert.False(t, tmb.Alive())
+	assert.ErrorIs(t, tmb.Err(), context.DeadlineExceeded)
 }
 
 func TestConsume_Success(t *testing.T) {
@@ -63,13 +69,14 @@ func TestConsume_Success(t *testing.T) {
 	sent := "hello world"
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
+	tmb, tctx := tomb.WithContext(ctx)
 	err := createTopic(ctx, topic)
 	if err != nil {
 		log.Fatal("failed to create topic:", err)
 	}
 
 	c := consumer.New(broker, topic)
-	msgChan, _ := c.Consume(ctx)
+	msgChan := c.Consume(tmb, tctx)
 
 	sendMessage(ctx, broker, topic, sent)
 	received := <-msgChan
@@ -85,13 +92,14 @@ func TestConsume_WithMultipleMessages(t *testing.T) {
 	sent2 := "world"
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
+	tmb, tctx := tomb.WithContext(ctx)
 	err := createTopic(ctx, topic)
 	if err != nil {
 		log.Fatal("failed to create topic:", err)
 	}
 
 	c := consumer.New(broker, topic)
-	msgChan, _ := c.Consume(ctx)
+	msgChan := c.Consume(tmb, tctx)
 
 	sendMessage(ctx, broker, topic, sent1)
 	sendMessage(ctx, broker, topic, sent2)

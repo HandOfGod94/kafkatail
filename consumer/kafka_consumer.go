@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/segmentio/kafka-go"
+	"gopkg.in/tomb.v2"
 )
 
 type kafkaConsumer struct {
@@ -32,38 +33,25 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 	}
 }
 
-func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan error) {
+func (kc *kafkaConsumer) Consume(t *tomb.Tomb, tctx context.Context) <-chan string {
 	outChan := make(chan string)
-	errorChan := make(chan error)
 
 	r, err := kc.initReader()
 	if err != nil {
 		log.Fatal("failed to initialize kafka consumer:", err)
 	}
 
-	go func(ctx context.Context) {
-		loop := true
-		for loop {
-			m, err := r.ReadMessage(ctx)
+	t.Go(func() error {
+		for {
+			m, err := r.ReadMessage(tctx)
 			if err != nil {
-				errorChan <- err
-				loop = false
+				return err
 			}
-			select {
-			case <-ctx.Done():
-				loop = false
-			default:
-				outChan <- string(m.Value)
-			}
+			outChan <- string(m.Value)
 		}
-		if err := r.Close(); err != nil {
-			errorChan <- err
-		}
-		close(outChan)
-		close(errorChan)
-	}(ctx)
+	})
 
-	return outChan, errorChan
+	return outChan
 }
 
 func (kc *kafkaConsumer) initReader() (*kafka.Reader, error) {
