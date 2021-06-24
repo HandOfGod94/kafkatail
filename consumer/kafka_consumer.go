@@ -36,17 +36,9 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan err
 	outChan := make(chan string)
 	errorChan := make(chan error)
 
-	log.Printf("Starting consumer with config: %+v", kc)
-
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: kc.bootstrapServers,
-		Topic:   kc.topic,
-	})
-
-	// TODO: move offset to options
-	err := r.SetOffset(kafka.LastOffset)
+	r, err := kc.initReader()
 	if err != nil {
-		log.Fatal("failed to seek offeset to end:", err)
+		log.Fatal("failed to initialize kafka consumer:", err)
 	}
 
 	go func(ctx context.Context) {
@@ -72,4 +64,20 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) (<-chan string, <-chan err
 	}(ctx)
 
 	return outChan, errorChan
+}
+
+func (kc *kafkaConsumer) initReader() (*kafka.Reader, error) {
+	log.Printf("Starting consumer with config: %+v", kc)
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: kc.bootstrapServers,
+		Topic:   kc.topic,
+	})
+
+	// TODO: move offset to options
+	err := r.SetOffset(kafka.LastOffset)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
