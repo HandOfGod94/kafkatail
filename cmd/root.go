@@ -25,31 +25,18 @@ import (
 	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
+	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
 	"gopkg.in/tomb.v2"
-)
-
-type WireFormat enumflag.Flag
-
-const (
-	PlainTextFormat WireFormat = iota
-	ProtoFormat
-	AvroFormat
 )
 
 var (
 	bootstrapServers []string
 	topic            string
 	groupID          string
-	wireForamt       WireFormat
+	wireForamt       wire.Format
 )
-
-var WireFormatIDs = map[WireFormat][]string{
-	PlainTextFormat: {"plaintext"},
-	ProtoFormat:     {"proto"},
-	AvroFormat:      {"avro"},
-}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -61,19 +48,19 @@ on console`,
 		// TODO: make timeouts configurable
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		tm, tctx := tomb.WithContext(ctx)
-		stopChan := make(chan os.Signal, 2)
-		signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+		tumb, tmCtx := tomb.WithContext(ctx)
 		msgChan :=
 			consumer.Options{
 				GroupID: groupID,
 			}.New(bootstrapServers, topic).
-				Consume(tm, tctx)
+				Consume(tumb, tmCtx)
 
+		stopChan := make(chan os.Signal, 2)
+		signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 		for {
 			select {
-			case <-tm.Dead():
-				log.Fatalf("failed to read messages from kafka. error: %v", tm.Err())
+			case <-tumb.Dead():
+				log.Fatalf("failed to read messages from kafka. error: %v", tumb.Err())
 			case msg := <-msgChan:
 				fmt.Println(msg)
 			case <-stopChan:
@@ -92,7 +79,7 @@ func init() {
 	rootCmd.Flags().StringSliceVar(&bootstrapServers, "bootstrap_servers", []string{}, "list of kafka `bootstrap_servers` separated by comma")
 	rootCmd.Flags().StringVar(&topic, "topic", "", "`topic` whose message you want to tail")
 	rootCmd.Flags().StringVar(&groupID, "group_id", "", "kafka consumer `group_id` to be used for subscribing to topic")
-	rootCmd.Flags().Var(enumflag.New(&wireForamt, "wire_format", WireFormatIDs, enumflag.EnumCaseSensitive),
+	rootCmd.Flags().Var(enumflag.New(&wireForamt, "wire_format", wire.FormatIDs, enumflag.EnumCaseSensitive),
 		"wire_format",
 		"Wire format of messages in topic",
 	)
