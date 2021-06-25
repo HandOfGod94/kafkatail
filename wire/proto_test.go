@@ -45,15 +45,20 @@ func TestProtoDecoder(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		// {
-		// 	desc: "when proto file is not present",
-		// },
-		// {
-		// 	desc: "when transitive types are not present in includes path",
-		// },
-		// {
-		// 	desc: "when requested type is absent",
-		// },
+		{
+			desc:        "when proto file is not present",
+			fields:      fields{"foo.proto", []string{"../testdata"}},
+			messageType: "Droid",
+			protoMsg:    &testdata.Human{HomePlanet: "earth", Mass: 32},
+			wantErr:     true,
+		},
+		{
+			desc:        "when message type is not present in proto path",
+			fields:      fields{"starwars.proto", []string{"../testdata"}},
+			messageType: "Foo",
+			protoMsg:    &testdata.Human{Mass: 32, HomePlanet: "earth"},
+			wantErr:     true,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {

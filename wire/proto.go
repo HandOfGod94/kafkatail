@@ -1,6 +1,8 @@
 package wire
 
 import (
+	"fmt"
+
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
@@ -31,14 +33,17 @@ func (pd *protoDecoder) Decode(raw []byte, messageType string) (string, error) {
 	}
 
 	messageDesc := protoDesc.Messages().ByName(protoreflect.Name(messageType))
-	decodeMsg := dynamicpb.NewMessage(messageDesc)
+	if messageDesc == nil {
+		return "", &DecodError{Format: "proto", Reason: fmt.Errorf("message type not found")}
+	}
 
-	err = proto.UnmarshalOptions{AllowPartial: true}.Unmarshal(raw, decodeMsg)
+	decodedMsg := dynamicpb.NewMessage(messageDesc)
+	err = proto.UnmarshalOptions{AllowPartial: true, DiscardUnknown: false}.Unmarshal(raw, decodedMsg)
 	if err != nil {
 		return "", &DecodError{Format: "proto", Reason: err}
 	}
 
-	return prototext.Format(decodeMsg), nil
+	return prototext.Format(decodedMsg), nil
 }
 
 func NewProtoDecoder(protoFile string, includes []string) *protoDecoder {
