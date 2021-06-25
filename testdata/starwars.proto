@@ -1,0 +1,96 @@
+syntax = "proto3";
+package starwars;
+
+option go_package = "github.com/handofgod94/kafkatail/testdata";
+
+enum Episode {
+  NEWHOPE = 0;
+  EMPIRE = 1;
+  JEDI = 2;
+}
+
+enum Species {
+  HUMAN = 0;
+  DROID = 1;
+}
+
+message Character {
+  uint32 id = 1;
+  string name = 2;
+  repeated Character friends = 3;
+  repeated Episode appearsIn = 4;
+  Species species = 5;
+}
+
+enum LengthUnit {
+  METER = 0;
+  FOOT = 1;
+}
+
+// We can't extend Character, cuz Proto Buffers don't support class inheritance
+message Human {
+  Character character = 1;
+  string homePlanet = 2;
+  message Height {
+    LengthUnit unit = 1;
+	float value = 2;
+  }
+  Height height = 3;
+  float mass = 4;
+  repeated Starship starship = 5;
+}
+
+message Droid {
+  Character character = 1;
+  string primaryFunction = 2;
+}
+
+message FriendsConnection {
+  uint32 totalCount = 1;
+  repeated FriendsEdge edges = 2;
+  repeated Character friends = 3;
+  PageInfo pageinfo = 4;
+}
+
+message FriendsEdge {
+  uint32 cursor = 1;
+  Character node = 2;
+}
+
+message PageInfo {
+  uint32 startCursor = 1;
+  uint32 endCursor = 2;
+  bool hasNextPage = 3;
+}
+
+message Review {
+  Episode episode = 1;
+  uint32 stars = 2;
+  string commentary = 3;
+}
+
+message ReviewInput {
+  uint32 stars = 1;
+  string commentary = 2;
+  ColourInput favouriteColour = 3;
+}
+
+message ColourInput {
+  uint32 red = 1;
+  uint32 green = 2;
+  uint32 blue = 3;
+}
+
+message Starship {
+  uint32 id = 1;
+  string name = 2;
+  message Length {
+    LengthUnit unit = 1;
+	float value = 2;
+  }
+  Length length = 3;
+  message Row {
+    repeated float values = 1;
+  }
+  repeated Row coordinates = 4;
+}

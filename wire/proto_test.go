@@ -3,8 +3,11 @@ package wire_test
 import (
 	"testing"
 
+	"github.com/handofgod94/kafkatail/testdata"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestNewProtoDecoder(t *testing.T) {
@@ -13,4 +16,60 @@ func TestNewProtoDecoder(t *testing.T) {
 
 	decoder := wire.NewProtoDecoder(protoFile, includes)
 	assert.NotNil(t, decoder)
+}
+
+func TestProtoDecoder(t *testing.T) {
+	type fields struct {
+		protoFile string
+		includes  []string
+	}
+
+	testCases := []struct {
+		desc        string
+		fields      fields
+		messageType string
+		protoMsg    proto.Message
+		wantErr     bool
+	}{
+		{
+			desc:        "with valid messageType, proto file and includes path",
+			fields:      fields{"starwars.proto", []string{"../testdata"}},
+			messageType: "Human",
+			protoMsg: &testdata.Human{
+				HomePlanet: "earth",
+				Mass:       32.0,
+				Height: &testdata.Human_Height{
+					Unit:  testdata.LengthUnit_METER,
+					Value: 172.0,
+				},
+			},
+			wantErr: false,
+		},
+		// {
+		// 	desc: "when proto file is not present",
+		// },
+		// {
+		// 	desc: "when transitive types are not present in includes path",
+		// },
+		// {
+		// 	desc: "when requested type is absent",
+		// },
+	}
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			bytes, _ := proto.Marshal(tc.protoMsg)
+			p := wire.NewProtoDecoder(tc.fields.protoFile, tc.fields.includes)
+
+			gotMsg, err := p.Decode(bytes, tc.messageType)
+
+			if tc.wantErr {
+				var decodeErr *wire.DecodError
+				assert.Error(t, err)
+				assert.ErrorAs(t, err, &decodeErr)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, prototext.Format(tc.protoMsg), gotMsg)
+			}
+		})
+	}
 }
