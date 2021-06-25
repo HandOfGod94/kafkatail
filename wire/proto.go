@@ -16,6 +16,10 @@ type protoDecoder struct {
 	protoFile string
 }
 
+func NewProtoDecoder(protoFile string, includes []string) *protoDecoder {
+	return &protoDecoder{includes, protoFile}
+}
+
 func (pd *protoDecoder) Decode(raw []byte, messageType string) (string, error) {
 	parser := protoparse.Parser{
 		ImportPaths:      pd.includes,
@@ -44,8 +48,4 @@ func (pd *protoDecoder) Decode(raw []byte, messageType string) (string, error) {
 	}
 
 	return prototext.Format(decodedMsg), nil
-}
-
-func NewProtoDecoder(protoFile string, includes []string) *protoDecoder {
-	return &protoDecoder{includes, protoFile}
 }

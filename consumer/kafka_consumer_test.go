@@ -3,6 +3,7 @@ package consumer_test
 import (
 	"context"
 	"log"
+	"os"
 	"testing"
 	"time"
 
@@ -70,10 +71,6 @@ func TestConsume_Success(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 	tmb, tctx := tomb.WithContext(ctx)
-	err := createTopic(ctx, topic)
-	if err != nil {
-		log.Fatal("failed to create topic:", err)
-	}
 
 	c := consumer.New(broker, topic)
 	msgChan := c.Consume(tmb, tctx)
@@ -81,7 +78,6 @@ func TestConsume_Success(t *testing.T) {
 	sendMessage(ctx, broker, topic, sent)
 	received := <-msgChan
 
-	deleteTopic(ctx, topic)
 	assert.Equal(t, sent, received)
 }
 
@@ -93,10 +89,6 @@ func TestConsume_WithMultipleMessages(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 	tmb, tctx := tomb.WithContext(ctx)
-	err := createTopic(ctx, topic)
-	if err != nil {
-		log.Fatal("failed to create topic:", err)
-	}
 
 	c := consumer.New(broker, topic)
 	msgChan := c.Consume(tmb, tctx)
@@ -106,7 +98,6 @@ func TestConsume_WithMultipleMessages(t *testing.T) {
 	received1 := <-msgChan
 	received2 := <-msgChan
 
-	deleteTopic(ctx, topic)
 	assert.Equal(t, sent1, received1)
 	assert.Equal(t, sent2, received2)
 }
@@ -149,4 +140,18 @@ func deleteTopic(ctx context.Context, topic string) error {
 		return err
 	}
 	return nil
+}
+
+func TestMain(m *testing.M) {
+	topic := "test_topic"
+	if err := createTopic(context.Background(), topic); err != nil {
+		log.Fatal("failed to create topic:", err)
+	}
+
+	code := m.Run()
+
+	if err := deleteTopic(context.Background(), topic); err != nil {
+		log.Fatal("failed to delete topic:", err)
+	}
+	os.Exit(code)
 }
