@@ -24,23 +24,23 @@ func (pd *protoDecoder) Decode(raw []byte, messageType string) (string, error) {
 
 	descriptors, err := parser.ParseFiles(pd.protoFile)
 	if err != nil {
-		return "", &DecodError{Format: "proto", Reason: err}
+		return "", ProtoDecodeError(err, "proto parser failed")
 	}
 
 	protoDesc, err := protodesc.FileOptions{AllowUnresolvable: true}.New(descriptors[0].AsFileDescriptorProto(), nil)
 	if err != nil {
-		return "", &DecodError{Format: "proto", Reason: err}
+		return "", ProtoDecodeError(err, "failed to genereate proto descriptors")
 	}
 
 	messageDesc := protoDesc.Messages().ByName(protoreflect.Name(messageType))
 	if messageDesc == nil {
-		return "", &DecodError{Format: "proto", Reason: fmt.Errorf("message type not found")}
+		return "", ProtoDecodeError(nil, "message type not found")
 	}
 
 	decodedMsg := dynamicpb.NewMessage(messageDesc)
 	err = proto.UnmarshalOptions{AllowPartial: true, DiscardUnknown: false}.Unmarshal(raw, decodedMsg)
 	if err != nil {
-		return "", &DecodError{Format: "proto", Reason: err}
+		return "", ProtoDecodeError(err, fmt.Sprintf("failed to unmarshal to type %v", messageType))
 	}
 
 	return prototext.Format(decodedMsg), nil
