@@ -10,6 +10,12 @@ quality-check:
 	gocyclo -over 15 .
 	gocognit -over 15 .
 
+.PHONY: integration-tests
+integration-tests:
+	go install
+	go test -tags=integration ./integration-tests
+
+
 test:
 	go install
 	go test -timeout 30s -cover -count=1 -coverprofile=coverage.out ./...
