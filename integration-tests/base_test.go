@@ -3,36 +3,39 @@
 package kafktail_test
 
 import (
+	"os/exec"
 	"strings"
 	"testing"
 
-	"github.com/rendon/testcli"
 	"github.com/stretchr/testify/assert"
 )
 
-const appName = "kafkatail"
-
 func TestKafkatailBase(t *testing.T) {
 	testCases := []struct {
-		cliArgs string
+		cmd     string
 		want    string
 		wantErr bool
 	}{
-		{"", `"bootstrap_servers", "topic" not set`, true},
-		{"--bootstrap_servers=1.1.1.1:9093 --topic=test --wire_format=foo", "must be 'avro', 'plaintext', 'proto'", true},
-		{"version", "0.1.0", false},
+		{"kafkatail", `"bootstrap_servers", "topic" not set`, true},
+		{"kafkatail --bootstrap_servers=1.1.1.1:9093 --topic=test --wire_format=foo", "must be 'avro', 'plaintext', 'proto'", true},
+		{"kafkatail version", "0.1.0", false},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.want, func(t *testing.T) {
-			testcli.Run(appName, strings.Split(tc.cliArgs, " ")...)
+			tokens := strings.Split(tc.cmd, " ")
+			appName := tokens[0]
+			args := tokens[1:]
+
+			out, err := exec.Command(appName, args...).Output()
 
 			if tc.wantErr {
-				assert.True(t, testcli.Failure())
-				assert.Contains(t, testcli.Stderr(), tc.want)
+				exitErr, ok := err.(*exec.ExitError)
+				assert.True(t, ok)
+				assert.Contains(t, string(exitErr.Stderr), tc.want)
 			} else {
-				assert.True(t, testcli.Success())
-				assert.Contains(t, testcli.Stdout(), tc.want)
+				assert.NoError(t, err)
+				assert.Contains(t, string(out), tc.want)
 			}
 		})
 	}
