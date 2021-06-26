@@ -22,7 +22,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
@@ -45,10 +44,7 @@ var rootCmd = &cobra.Command{
 	Long: `Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
 on console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: make timeouts configurable
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		tumb, tmCtx := tomb.WithContext(ctx)
+		tumb, tmCtx := tomb.WithContext(context.Background())
 		msgChan :=
 			consumer.Options{
 				GroupID: groupID,

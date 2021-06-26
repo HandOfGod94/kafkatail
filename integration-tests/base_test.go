@@ -22,7 +22,7 @@ func TestKafkatailBase(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.want, func(t *testing.T) {
+		t.Run(tc.cmd, func(t *testing.T) {
 			tokens := strings.Split(tc.cmd, " ")
 			appName := tokens[0]
 			args := tokens[1:]

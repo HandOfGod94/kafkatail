@@ -121,25 +121,27 @@ func sendMessage(ctx context.Context, brokers []string, topic, message string) {
 }
 
 func createTopic(ctx context.Context, topic string) error {
-	_, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
-		Topics: []kafka.TopicConfig{{Topic: topic, NumPartitions: 1}},
+	resp, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
+		Topics: []kafka.TopicConfig{
+			{Topic: topic, NumPartitions: 1, ReplicationFactor: 1},
+		},
 	})
 
 	if err != nil {
 		return err
 	}
-	return nil
+	return resp.Errors[topic]
 }
 
 func deleteTopic(ctx context.Context, topic string) error {
-	_, err := kafkaRawClient.DeleteTopics(ctx, &kafka.DeleteTopicsRequest{
+	resp, err := kafkaRawClient.DeleteTopics(ctx, &kafka.DeleteTopicsRequest{
 		Topics: []string{topic},
 	})
 
 	if err != nil {
 		return err
 	}
-	return nil
+	return resp.Errors[topic]
 }
 
 func TestMain(m *testing.M) {
