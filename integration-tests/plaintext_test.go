@@ -1,6 +1,6 @@
 // +build integration
 
-package kafktail_test
+package kafkatail_test
 
 import (
 	"context"
@@ -30,8 +30,8 @@ func TestKafkatailPlaintext(t *testing.T) {
 		},
 	}
 
-	createTopic(context.Background(), "kafkatail-test")
-	defer deleteTopic(context.Background(), "kafkatail-test")
+	createTopic(t, context.Background(), "kafkatail-test")
+	defer deleteTopic(t, context.Background(), "kafkatail-test")
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -49,7 +49,7 @@ func TestKafkatailPlaintext(t *testing.T) {
 				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
 				t.FailNow()
 			}
-			sendMessage(context.Background(), []string{"localhost:9093"}, "kafkatail-test", tc.want)
+			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test", tc.want)
 			got, err := io.ReadAll(stdout)
 			if err != nil {
 				t.Log("failed to read stdout:", err)

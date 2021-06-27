@@ -1,6 +1,6 @@
 // +build integration
 
-package kafktail_test
+package kafkatail_test
 
 import (
 	"os/exec"

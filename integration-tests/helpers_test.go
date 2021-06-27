@@ -1,11 +1,11 @@
 // +build integration
 
-package kafktail_test
+package kafkatail_test
 
 import (
 	"context"
-	"log"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -17,7 +17,7 @@ var kafkaRawClient = kafka.Client{
 	Transport: nil,
 }
 
-func sendMessage(ctx context.Context, brokers []string, topic, message string) {
+func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic, message string) {
 	w := &kafka.Writer{
 		Addr:  kafka.TCP(brokers...),
 		Topic: topic,
@@ -27,39 +27,45 @@ func sendMessage(ctx context.Context, brokers []string, topic, message string) {
 		Key:   []byte("foo"),
 		Value: []byte(message),
 	}); err != nil {
-		log.Fatal("failed to write messages: ", err)
+		t.Log("failed to write messages: ", err)
+		t.FailNow()
 	}
 
 	if err := w.Close(); err != nil {
-		log.Fatal("failed to close writer:", err)
+		t.Log("failed to close writer:", err)
+		t.FailNow()
 	}
 }
 
-func createTopic(ctx context.Context, topic string) {
+func createTopic(t *testing.T, ctx context.Context, topic string) {
 	resp, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
 		Topics: []kafka.TopicConfig{{Topic: topic, NumPartitions: 1, ReplicationFactor: 1}},
 	})
 
 	if err != nil {
-		log.Fatal("failed to create topic:", err)
+		t.Log("failed to create topic:", err)
+		t.FailNow()
 	}
 
 	if resp.Errors[topic] != nil {
-		log.Fatalf("failed to create topic. errors: %+v", resp.Errors)
+		t.Logf("failed to create topic. errors: %+v", resp.Errors)
+		t.FailNow()
 	}
 }
 
-func deleteTopic(ctx context.Context, topic string) {
+func deleteTopic(t *testing.T, ctx context.Context, topic string) {
 	resp, err := kafkaRawClient.DeleteTopics(ctx, &kafka.DeleteTopicsRequest{
 		Topics: []string{topic},
 	})
 
 	if err != nil {
-		log.Fatal("failed to delete topic:", err)
+		t.Log("failed to delete topic:", err)
+		t.FailNow()
 	}
 
 	if resp.Errors[topic] != nil {
-		log.Fatalf("failed to create topic. errors: %+v", resp.Errors)
+		t.Logf("failed to create topic. errors: %+v", resp.Errors)
+		t.FailNow()
 	}
 }
 
