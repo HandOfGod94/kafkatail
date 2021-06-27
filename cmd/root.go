@@ -16,18 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-
-	"github.com/handofgod94/kafkatail/consumer"
+	"github.com/handofgod94/kafkatail/app"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
-	"gopkg.in/tomb.v2"
 )
 
 var (
@@ -44,26 +36,14 @@ var rootCmd = &cobra.Command{
 	Long: `Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
 on console`,
 	Run: func(cmd *cobra.Command, args []string) {
-		tumb, tmCtx := tomb.WithContext(context.Background())
-		msgChan :=
-			consumer.Options{
-				GroupID: groupID,
-			}.New(bootstrapServers, topic).
-				Consume(tumb, tmCtx)
-
-		stopChan := make(chan os.Signal, 2)
-		signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-		for {
-			select {
-			case <-tumb.Dead():
-				log.Fatalf("failed to read messages from kafka. error: %v", tumb.Err())
-			case msg := <-msgChan:
-				fmt.Println(msg)
-			case <-stopChan:
-				log.Printf("Stopping application")
-				os.Exit(0)
-			}
+		opts := app.AppOptions{
+			BootstrapServers: bootstrapServers,
+			Topic:            topic,
+			GroupID:          groupID,
+			WireForamt:       wireForamt,
 		}
+
+		opts.Start()
 	},
 }
 
