@@ -4,6 +4,7 @@ package kafkatail_test
 
 import (
 	"context"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -74,4 +75,11 @@ func appNameAndArgs(cmd string) (appName string, args []string) {
 	appName = tokens[0]
 	args = tokens[1:]
 	return
+}
+
+func streamToRead(wantErr bool, stdout, stderr io.ReadCloser) io.ReadCloser {
+	if wantErr {
+		return stderr
+	}
+	return stdout
 }

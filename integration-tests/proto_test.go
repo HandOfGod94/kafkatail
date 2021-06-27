@@ -12,23 +12,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestKafkatailPlaintext(t *testing.T) {
+func TestKafkatalProto(t *testing.T) {
 	testCases := []struct {
-		desc string
-		cmd  string
-		want string
+		desc    string
+		cmd     string
+		want    string
+		wantErr bool
 	}{
 		{
-			desc: "when topic doesn't exist",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --topic=foobar",
-			want: "",
+			desc:    "fails when user doesn't provide required proto args",
+			cmd:     "kafkatail  --wire_format=proto kafkatail-test",
+			want:    `"protoFile", "incldues" not set`,
+			wantErr: true,
 		},
-		{
-			desc: "when messages are present in topic",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 kafkatail-test",
-			want: "hello world",
-		},
+		// {
+		// 	desc: "prints decoded messages based on valid proto provided via args",
+		// },
+		// {
+		// 	desc: "prints decode error when it fails to decode",
+		// },
 	}
+	t.Skip()
 
 	createTopic(t, context.Background(), "kafkatail-test")
 	defer deleteTopic(t, context.Background(), "kafkatail-test")
@@ -39,6 +43,7 @@ func TestKafkatailPlaintext(t *testing.T) {
 			appName, args := appNameAndArgs(tc.cmd)
 			cmd := exec.CommandContext(ctx, appName, args...)
 			stdout, err := cmd.StdoutPipe()
+			stderr, err := cmd.StderrPipe()
 			if err != nil {
 				t.Log("failed to create stdout pipe:", err)
 				t.FailNow()
@@ -49,8 +54,9 @@ func TestKafkatailPlaintext(t *testing.T) {
 				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
 				t.FailNow()
 			}
-			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test", tc.want)
-			got, err := io.ReadAll(stdout)
+
+			stream := streamToRead(tc.wantErr, stdout, stderr)
+			got, err := io.ReadAll(stream)
 			if err != nil {
 				t.Log("failed to read stdout:", err)
 				t.FailNow()

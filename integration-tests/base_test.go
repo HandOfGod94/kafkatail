@@ -16,9 +16,9 @@ func TestKafkatailBase(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"kafkatail", `"bootstrap_servers", "topic" not set`, true},
-		{"kafkatail --bootstrap_servers=1.1.1.1:9093 --topic=test --wire_format=foo", "must be 'avro', 'plaintext', 'proto'", true},
-		{"kafkatail version", "0.1.0", false},
+		{"kafkatail", `accepts 1 arg(s)`, true},
+		{"kafkatail --bootstrap_servers=1.1.1.1:9093 --wire_format=foo test", "must be 'avro', 'plaintext', 'proto'", true},
+		{"kafkatail --version", "0.1.0", false},
 	}
 
 	for _, tc := range testCases {
