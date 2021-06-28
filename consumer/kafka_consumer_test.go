@@ -34,7 +34,7 @@ func TestConsume_Errors(t *testing.T) {
 			c := consumer.New(tc.bootstrapServers, tc.topic)
 			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 			defer cancel()
-			err := c.Consume(ctx, wire.NewPlaintextDecoder(), "")
+			err := c.Consume(ctx, wire.NewPlaintextDecoder())
 
 			assert.Contains(t, err.Error(), tc.expectedErr)
 		})

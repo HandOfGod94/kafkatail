@@ -34,7 +34,7 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 	}
 }
 
-func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder, messageType string) error {
+func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder) error {
 	r, err := kc.initReader()
 	if err != nil {
 		log.Fatal("failed to initialize kafka consumer:", err)
@@ -46,9 +46,10 @@ func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder, mess
 			// TODO: return custom wrapped error with contextual info
 			return err
 		}
+
 		value, err := decoder.Decode(m.Value)
 		if err != nil {
-			log.Printf("failed to decode message for type %v. error: %v", messageType, err)
+			log.Printf("failed to decode message. error: %v", err)
 			continue
 		}
 		fmt.Println(value)
