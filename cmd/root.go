@@ -28,6 +28,7 @@ var (
 	wireForamt       wire.Format
 	protoFile        string
 	includePaths     []string
+	messageType      string
 )
 
 const appVersion = "0.1.0"
@@ -46,6 +47,9 @@ on console`,
 			Topic:            args[0],
 			GroupID:          groupID,
 			WireForamt:       wireForamt,
+			ProtoFile:        protoFile,
+			Includes:         includePaths,
+			MessageType:      messageType,
 		}
 
 		opts.Start()
@@ -61,6 +65,7 @@ func init() {
 	rootCmd.Flags().StringVar(&groupID, "group_id", "", "[Optional] kafka consumer `group_id` to be used for subscribing to topic")
 	rootCmd.Flags().StringVar(&protoFile, "proto_file", "", "`proto_file` to be used for decoding kafka message. Required for `wire_format=proto`")
 	rootCmd.Flags().StringSliceVar(&includePaths, "include_paths", []string{}, "`include_paths` containing dependencies of proto. Required for `wire_format=proto`")
+	rootCmd.Flags().StringVar(&messageType, "message_type", "", "proto message `type` to use for decoding . Required for `wire_format=proto`")
 	rootCmd.Flags().Var(enumflag.New(&wireForamt, "wire_format", wire.FormatIDs, enumflag.EnumCaseSensitive),
 		"wire_format",
 		"Wire format of messages in topic",

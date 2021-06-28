@@ -9,8 +9,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/handofgod94/kafkatail/testdata"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
+
+var starwarsHuman = testdata.Human{
+	Mass:   32.0,
+	Height: &testdata.Human_Height{Unit: testdata.LengthUnit_METER, Value: 1.0},
+}
 
 func TestKafkatalProto(t *testing.T) {
 	testCases := []struct {
@@ -20,22 +27,19 @@ func TestKafkatalProto(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			desc:    "fails when user doesn't provide required proto args",
-			cmd:     "kafkatail  --wire_format=proto kafkatail-test",
-			want:    `"protoFile", "incldues" not set`,
+			desc: "prints decoded messages based on valid proto provided via args",
+			cmd:  `kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=starwars.proto --include_paths="../testdata" --message_type=Human kafkatail-test-proto`,
+			want: "height:",
+		},
+		{
+			desc:    "prints decode error when it fails to decode",
+			cmd:     `kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=foo.proto --include_paths="../testdata" --message_type=Human kafkatail-test-proto`,
+			want:    "failed to decode message",
 			wantErr: true,
 		},
-		// {
-		// 	desc: "prints decoded messages based on valid proto provided via args",
-		// },
-		// {
-		// 	desc: "prints decode error when it fails to decode",
-		// },
 	}
-	t.Skip()
-
-	createTopic(t, context.Background(), "kafkatail-test")
-	defer deleteTopic(t, context.Background(), "kafkatail-test")
+	createTopic(t, context.Background(), "kafkatail-test-proto")
+	defer deleteTopic(t, context.Background(), "kafkatail-test-proto")
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -55,6 +59,13 @@ func TestKafkatalProto(t *testing.T) {
 				t.FailNow()
 			}
 
+			msg, err := proto.Marshal(&starwarsHuman)
+			if err != nil {
+				t.Log("failed to marshal message:", err)
+				t.FailNow()
+			}
+
+			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test-proto", msg)
 			stream := streamToRead(tc.wantErr, stdout, stderr)
 			got, err := io.ReadAll(stream)
 			if err != nil {

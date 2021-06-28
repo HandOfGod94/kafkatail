@@ -13,6 +13,9 @@ type AppOptions struct {
 	Topic            string
 	GroupID          string
 	WireForamt       wire.Format
+	ProtoFile        string
+	Includes         []string
+	MessageType      string
 }
 
 func (ao *AppOptions) Start() {
@@ -20,7 +23,7 @@ func (ao *AppOptions) Start() {
 		consumer.Options{
 			GroupID: ao.GroupID,
 		}.New(ao.BootstrapServers, ao.Topic).
-			Consume(context.Background())
+			Consume(context.Background(), wire.NewPlaintextDecoder(), "")
 
 	log.Fatal("error while consuming messages:", err)
 }

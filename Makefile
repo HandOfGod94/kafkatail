@@ -1,9 +1,12 @@
 APP_NAME=kafkatail
 
-all: clean fmt tidy build
+all: clean fmt tidy build install
 
 clean:
 	rm -rf out/
+
+install:
+	go install
 
 quality-check:
 	staticcheck ./...

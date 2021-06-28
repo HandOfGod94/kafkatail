@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
+	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,7 +34,7 @@ func TestConsume_Errors(t *testing.T) {
 			c := consumer.New(tc.bootstrapServers, tc.topic)
 			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 			defer cancel()
-			err := c.Consume(ctx)
+			err := c.Consume(ctx, wire.NewPlaintextDecoder(), "")
 
 			assert.Contains(t, err.Error(), tc.expectedErr)
 		})

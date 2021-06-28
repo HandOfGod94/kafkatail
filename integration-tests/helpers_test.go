@@ -18,7 +18,7 @@ var kafkaRawClient = kafka.Client{
 	Transport: nil,
 }
 
-func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic, message string) {
+func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic string, message []byte) {
 	w := &kafka.Writer{
 		Addr:  kafka.TCP(brokers...),
 		Topic: topic,
@@ -26,7 +26,7 @@ func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic, mes
 
 	if err := w.WriteMessages(ctx, kafka.Message{
 		Key:   []byte("foo"),
-		Value: []byte(message),
+		Value: message,
 	}); err != nil {
 		t.Log("failed to write messages: ", err)
 		t.FailNow()

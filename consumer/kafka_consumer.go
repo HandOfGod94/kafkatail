@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -33,7 +34,7 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 	}
 }
 
-func (kc *kafkaConsumer) Consume(ctx context.Context) error {
+func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder, messageType string) error {
 	r, err := kc.initReader()
 	if err != nil {
 		log.Fatal("failed to initialize kafka consumer:", err)
@@ -45,7 +46,12 @@ func (kc *kafkaConsumer) Consume(ctx context.Context) error {
 			// TODO: return custom wrapped error with contextual info
 			return err
 		}
-		fmt.Println(string(m.Value))
+		value, err := decoder.Decode(m.Value, messageType)
+		if err != nil {
+			log.Printf("failed to decode message for type %v. error: %v", messageType, err)
+			continue
+		}
+		fmt.Println(value)
 	}
 
 }

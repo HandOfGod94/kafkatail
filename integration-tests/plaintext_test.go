@@ -20,7 +20,7 @@ func TestKafkatailPlaintext(t *testing.T) {
 	}{
 		{
 			desc: "when topic doesn't exist",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --topic=foobar",
+			cmd:  "kafkatail --bootstrap_servers=localhost:9093 foobar",
 			want: "",
 		},
 		{
@@ -49,7 +49,7 @@ func TestKafkatailPlaintext(t *testing.T) {
 				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
 				t.FailNow()
 			}
-			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test", tc.want)
+			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test", []byte(tc.want))
 			got, err := io.ReadAll(stdout)
 			if err != nil {
 				t.Log("failed to read stdout:", err)
