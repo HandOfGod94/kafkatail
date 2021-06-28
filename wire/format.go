@@ -17,5 +17,5 @@ var FormatIDs = map[Format][]string{
 }
 
 type Decoder interface {
-	Decode([]byte, string) (string, error)
+	Decode([]byte) (string, error)
 }

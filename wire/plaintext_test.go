@@ -17,7 +17,7 @@ func TestPlaintextDecoder(t *testing.T) {
 	want := "hello world"
 
 	decoder := wire.NewPlaintextDecoder()
-	got, err := decoder.Decode(in, "")
+	got, err := decoder.Decode(in)
 
 	assert.NoError(t, err)
 	assert.Equal(t, want, got)

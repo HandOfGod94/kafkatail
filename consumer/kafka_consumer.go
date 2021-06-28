@@ -46,7 +46,7 @@ func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder, mess
 			// TODO: return custom wrapped error with contextual info
 			return err
 		}
-		value, err := decoder.Decode(m.Value, messageType)
+		value, err := decoder.Decode(m.Value)
 		if err != nil {
 			log.Printf("failed to decode message for type %v. error: %v", messageType, err)
 			continue

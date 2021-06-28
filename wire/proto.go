@@ -12,15 +12,16 @@ import (
 )
 
 type protoDecoder struct {
-	includes  []string
-	protoFile string
+	includes    []string
+	protoFile   string
+	messageType string
 }
 
-func NewProtoDecoder(protoFile string, includes []string) *protoDecoder {
-	return &protoDecoder{includes, protoFile}
+func NewProtoDecoder(protoFile, messageType string, includes []string) *protoDecoder {
+	return &protoDecoder{includes, protoFile, messageType}
 }
 
-func (pd *protoDecoder) Decode(raw []byte, messageType string) (string, error) {
+func (pd *protoDecoder) Decode(raw []byte) (string, error) {
 	parser := protoparse.Parser{
 		ImportPaths:      pd.includes,
 		InferImportPaths: true,
@@ -36,7 +37,7 @@ func (pd *protoDecoder) Decode(raw []byte, messageType string) (string, error) {
 		return "", ProtoDecodeError(err, "failed to genereate proto descriptors")
 	}
 
-	messageDesc := protoDesc.Messages().ByName(protoreflect.Name(messageType))
+	messageDesc := protoDesc.Messages().ByName(protoreflect.Name(pd.messageType))
 	if messageDesc == nil {
 		return "", ProtoDecodeError(nil, "message type not found")
 	}
@@ -44,7 +45,7 @@ func (pd *protoDecoder) Decode(raw []byte, messageType string) (string, error) {
 	decodedMsg := dynamicpb.NewMessage(messageDesc)
 	err = proto.UnmarshalOptions{AllowPartial: true, DiscardUnknown: false}.Unmarshal(raw, decodedMsg)
 	if err != nil {
-		return "", ProtoDecodeError(err, fmt.Sprintf("failed to unmarshal to type %v", messageType))
+		return "", ProtoDecodeError(err, fmt.Sprintf("failed to unmarshal to type %v", pd.messageType))
 	}
 
 	return prototext.Format(decodedMsg), nil
