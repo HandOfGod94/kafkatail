@@ -14,19 +14,41 @@ import (
 
 func TestKafkatailPlaintext(t *testing.T) {
 	testCases := []struct {
-		desc string
-		cmd  string
-		want string
+		desc    string
+		cmd     string
+		message string
+		want    string
+		wantErr bool
 	}{
 		{
-			desc: "when topic doesn't exist",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 foobar",
-			want: "",
+			desc:    "when topic doesn't exist",
+			cmd:     "kafkatail --bootstrap_servers=localhost:9093 foobar",
+			message: "hello world",
+			want:    "",
 		},
 		{
-			desc: "when messages are present in topic",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 kafkatail-test",
-			want: "hello world",
+			desc:    "when messages are present in topic",
+			cmd:     "kafkatail --bootstrap_servers=localhost:9093 kafkatail-test",
+			message: "hello world",
+			want:    "hello world",
+		},
+		{
+			desc:    "with offset option",
+			cmd:     "kafkatail --bootstrap_servers=localhost:9093 --offset=-2 kafkatail-test",
+			message: "hello world",
+			want:    "Offset: 0",
+		},
+		{
+			desc:    "with partition option",
+			cmd:     "kafkatail --bootstrap_servers=localhost:9093 --partition=0 kafkatail-test",
+			message: "hello world",
+			want:    "Partition: 0",
+		},
+		{
+			desc:    "with `from_datetime` option",
+			cmd:     "kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-06-28T15:04:23Z kafkatail-test",
+			message: "hello world",
+			want:    "hello world",
 		},
 	}
 
@@ -39,6 +61,7 @@ func TestKafkatailPlaintext(t *testing.T) {
 			appName, args := appNameAndArgs(tc.cmd)
 			cmd := exec.CommandContext(ctx, appName, args...)
 			stdout, err := cmd.StdoutPipe()
+			stderr, err := cmd.StderrPipe()
 			if err != nil {
 				t.Log("failed to create stdout pipe:", err)
 				t.FailNow()
@@ -49,8 +72,9 @@ func TestKafkatailPlaintext(t *testing.T) {
 				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
 				t.FailNow()
 			}
-			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test", []byte(tc.want))
-			got, err := io.ReadAll(stdout)
+			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test", []byte(tc.message))
+			stream := streamToRead(tc.wantErr, stdout, stderr)
+			got, err := io.ReadAll(stream)
 			if err != nil {
 				t.Log("failed to read stdout:", err)
 				t.FailNow()

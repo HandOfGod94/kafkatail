@@ -25,7 +25,6 @@ func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic stri
 	}
 
 	if err := w.WriteMessages(ctx, kafka.Message{
-		Key:   []byte("foo"),
 		Value: message,
 	}); err != nil {
 		t.Log("failed to write messages: ", err)

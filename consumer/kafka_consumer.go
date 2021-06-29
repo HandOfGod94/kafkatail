@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
@@ -17,9 +18,10 @@ type kafkaConsumer struct {
 }
 
 type Options struct {
-	GroupID   string
-	Offset    int64
-	Partition int
+	GroupID      string
+	Offset       int64
+	Partition    int
+	FromDateTime time.Time
 }
 
 func (o Options) New(bootstrapServers []string, topic string) *kafkaConsumer {
@@ -40,7 +42,7 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 }
 
 func (kc *kafkaConsumer) Consume(ctx context.Context, w io.Writer, decoder wire.Decoder) error {
-	r, err := kc.initReader()
+	r, err := kc.initReader(ctx)
 	if err != nil {
 		log.Fatal("failed to initialize kafka consumer:", err)
 	}
@@ -64,13 +66,21 @@ func (kc *kafkaConsumer) Consume(ctx context.Context, w io.Writer, decoder wire.
 
 }
 
-func (kc *kafkaConsumer) initReader() (*kafka.Reader, error) {
+func (kc *kafkaConsumer) initReader(ctx context.Context) (*kafka.Reader, error) {
 	log.Printf("Starting consumer with config: %+v", kc)
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:   kc.bootstrapServers,
 		Topic:     kc.topic,
 		Partition: kc.options.Partition,
 	})
+
+	if !kc.options.FromDateTime.IsZero() {
+		err := r.SetOffsetAt(ctx, kc.options.FromDateTime)
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	}
 
 	err := r.SetOffset(kc.options.Offset)
 	if err != nil {
