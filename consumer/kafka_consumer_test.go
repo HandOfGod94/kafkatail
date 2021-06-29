@@ -16,8 +16,9 @@ const defaultTimeout = 5 * time.Second
 
 func TestCreateConsumerWithOptions(t *testing.T) {
 	opts := consumer.Options{
-		GroupID: "foo",
-		Offset:  10,
+		GroupID:   "foo",
+		Offset:    10,
+		Partition: 2,
 	}
 
 	c := opts.New([]string{"localhost:9093"}, "footest")
@@ -60,11 +61,38 @@ func TestConsume_Success(t *testing.T) {
 		c.Consume(ctx, w, wire.NewPlaintextDecoder())
 	}(ctx)
 
-	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("hello"))
-	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("world"))
+	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("foo"), []byte("hello"))
+	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("foo"), []byte("world"))
 
 	<-ctx.Done()
-	assert.Equal(t, "hello\nworld\n", w.String())
+	got := w.String()
+	assert.Contains(t, got, "hello\n")
+	assert.Contains(t, got, "world\n")
+}
+
+func TestConsume_WithParition(t *testing.T) {
+	w := bytes.NewBufferString("")
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	topic := kafka.TopicConfig{
+		Topic:             "kafkatail-test-topic",
+		NumPartitions:     2,
+		ReplicationFactor: 1,
+	}
+	createTopicWithConfig(t, context.Background(), topic)
+	defer deleteTopic(t, context.Background(), "kafkatail-test-topic")
+
+	c := consumer.Options{Partition: 0}.New([]string{"localhost:9093"}, "kafkatail-test-topic")
+	go func(ctx context.Context) {
+		c.Consume(ctx, w, wire.NewPlaintextDecoder())
+	}(ctx)
+
+	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("foo"), []byte("hello"))
+	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("bar"), []byte("world"))
+
+	<-ctx.Done()
+	assert.Contains(t, w.String(), "Partition: 0")
 }
 
 func TestConsumer_WithOffeset(t *testing.T) {
@@ -74,8 +102,8 @@ func TestConsumer_WithOffeset(t *testing.T) {
 	createTopic(t, context.Background(), "kafkatail-test-topic")
 	defer deleteTopic(t, context.Background(), "kafkatail-test-topic")
 
-	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("hello"))
-	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("world"))
+	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("foo"), []byte("hello"))
+	sendMessage(t, ctx, []string{"localhost:9093"}, "kafkatail-test-topic", []byte("foo"), []byte("world"))
 
 	c := consumer.Options{Offset: kafka.FirstOffset}.New([]string{"localhost:9093"}, "kafkatail-test-topic")
 	c.Consume(ctx, w, wire.NewPlaintextDecoder())

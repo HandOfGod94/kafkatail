@@ -13,14 +13,14 @@ var kafkaRawClient = kafka.Client{
 	Transport: nil,
 }
 
-func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic string, message []byte) {
+func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic string, key, message []byte) {
 	w := &kafka.Writer{
 		Addr:  kafka.TCP(brokers...),
 		Topic: topic,
 	}
 
 	if err := w.WriteMessages(ctx, kafka.Message{
-		Key:   []byte("foo"),
+		Key:   key,
 		Value: message,
 	}); err != nil {
 		t.Log("failed to write messages: ", err)
@@ -44,6 +44,22 @@ func createTopic(t *testing.T, ctx context.Context, topic string) {
 	}
 
 	if resp.Errors[topic] != nil {
+		t.Logf("failed to create topic. errors: %+v", resp.Errors)
+		t.FailNow()
+	}
+}
+
+func createTopicWithConfig(t *testing.T, ctx context.Context, topic kafka.TopicConfig) {
+	resp, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
+		Topics: []kafka.TopicConfig{topic},
+	})
+
+	if err != nil {
+		t.Log("failed to create topic:", err)
+		t.FailNow()
+	}
+
+	if resp.Errors[topic.Topic] != nil {
 		t.Logf("failed to create topic. errors: %+v", resp.Errors)
 		t.FailNow()
 	}

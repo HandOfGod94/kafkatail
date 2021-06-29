@@ -17,8 +17,9 @@ type kafkaConsumer struct {
 }
 
 type Options struct {
-	GroupID string
-	Offset  int64
+	GroupID   string
+	Offset    int64
+	Partition int
 }
 
 func (o Options) New(bootstrapServers []string, topic string) *kafkaConsumer {
@@ -66,8 +67,9 @@ func (kc *kafkaConsumer) Consume(ctx context.Context, w io.Writer, decoder wire.
 func (kc *kafkaConsumer) initReader() (*kafka.Reader, error) {
 	log.Printf("Starting consumer with config: %+v", kc)
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: kc.bootstrapServers,
-		Topic:   kc.topic,
+		Brokers:   kc.bootstrapServers,
+		Topic:     kc.topic,
+		Partition: kc.options.Partition,
 	})
 
 	err := r.SetOffset(kc.options.Offset)

@@ -18,6 +18,7 @@ type AppOptions struct {
 	Includes         []string
 	MessageType      string
 	Offset           int64
+	Partition        int
 }
 
 func (ao *AppOptions) withDecoder() wire.Decoder {
@@ -34,8 +35,9 @@ func (ao *AppOptions) withDecoder() wire.Decoder {
 func (ao *AppOptions) Start() {
 	err :=
 		consumer.Options{
-			GroupID: ao.GroupID,
-			Offset:  ao.Offset,
+			GroupID:   ao.GroupID,
+			Offset:    ao.Offset,
+			Partition: ao.Partition,
 		}.New(ao.BootstrapServers, ao.Topic).
 			Consume(context.Background(), os.Stdout, ao.withDecoder())
 
