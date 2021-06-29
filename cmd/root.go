@@ -1,7 +1,11 @@
 package cmd
 
 import (
-	"github.com/handofgod94/kafkatail/app"
+	"context"
+	"log"
+	"os"
+
+	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
@@ -29,19 +33,15 @@ on console`,
 	Version: appVersion,
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		opts := app.AppOptions{
-			BootstrapServers: bootstrapServers,
-			Topic:            args[0],
-			GroupID:          groupID,
-			WireForamt:       wireForamt,
-			ProtoFile:        protoFile,
-			Includes:         includePaths,
-			MessageType:      messageType,
-			Offset:           offset,
-			Partition:        partition,
-		}
+		topic := args[0]
 
-		opts.Start()
+		err := consumer.Options{
+			GroupID:   groupID,
+			Offset:    offset,
+			Partition: partition,
+		}.New(bootstrapServers, topic).Consume(context.Background(), os.Stdout, decoderFactory(wireForamt))
+
+		log.Fatal("error while consuming messages:", err)
 	},
 }
 
@@ -66,4 +66,15 @@ func init() {
 
 	rootCmd.MarkFlagRequired("bootstrap_servers")
 	rootCmd.MarkFlagRequired("topic")
+}
+
+func decoderFactory(wireFormat wire.Format) wire.Decoder {
+	if wireFormat == wire.PlainText {
+		return wire.NewPlaintextDecoder()
+	} else if wireFormat == wire.Proto {
+		return wire.NewProtoDecoder(protoFile, messageType, includePaths)
+	} else {
+		log.Fatalf("unsupported message type. received: %v, supported: %v", messageType, "plaintext, proto")
+		return nil
+	}
 }
