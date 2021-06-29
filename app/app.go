@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
@@ -16,6 +17,7 @@ type AppOptions struct {
 	ProtoFile        string
 	Includes         []string
 	MessageType      string
+	Offset           int64
 }
 
 func (ao *AppOptions) withDecoder() wire.Decoder {
@@ -33,8 +35,9 @@ func (ao *AppOptions) Start() {
 	err :=
 		consumer.Options{
 			GroupID: ao.GroupID,
+			Offset:  ao.Offset,
 		}.New(ao.BootstrapServers, ao.Topic).
-			Consume(context.Background(), ao.withDecoder())
+			Consume(context.Background(), os.Stdout, ao.withDecoder())
 
 	log.Fatal("error while consuming messages:", err)
 }

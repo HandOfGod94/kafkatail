@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/handofgod94/kafkatail/wire"
@@ -17,6 +18,7 @@ type kafkaConsumer struct {
 
 type Options struct {
 	GroupID string
+	Offset  int64
 }
 
 func (o Options) New(bootstrapServers []string, topic string) *kafkaConsumer {
@@ -30,11 +32,13 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 	return &kafkaConsumer{
 		bootstrapServers: bootstrapServers,
 		topic:            topic,
-		options:          Options{},
+		options: Options{
+			Offset: kafka.LastOffset,
+		},
 	}
 }
 
-func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder) error {
+func (kc *kafkaConsumer) Consume(ctx context.Context, w io.Writer, decoder wire.Decoder) error {
 	r, err := kc.initReader()
 	if err != nil {
 		log.Fatal("failed to initialize kafka consumer:", err)
@@ -52,7 +56,9 @@ func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder) erro
 			log.Printf("failed to decode message. error: %v", err)
 			continue
 		}
-		fmt.Println(value)
+		fmt.Fprintln(w, "====================Message====================")
+		fmt.Fprintf(w, "============Partition: %v, Offset: %v==========\n", m.Partition, m.Offset)
+		fmt.Fprintln(w, value)
 	}
 
 }
@@ -64,8 +70,7 @@ func (kc *kafkaConsumer) initReader() (*kafka.Reader, error) {
 		Topic:   kc.topic,
 	})
 
-	// TODO: move offset to options
-	err := r.SetOffset(kafka.LastOffset)
+	err := r.SetOffset(kc.options.Offset)
 	if err != nil {
 		return nil, err
 	}

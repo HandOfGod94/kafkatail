@@ -14,6 +14,7 @@ var (
 	protoFile        string
 	includePaths     []string
 	messageType      string
+	offset           int64
 )
 
 const appVersion = "0.1.0"
@@ -35,6 +36,7 @@ on console`,
 			ProtoFile:        protoFile,
 			Includes:         includePaths,
 			MessageType:      messageType,
+			Offset:           offset,
 		}
 
 		opts.Start()
@@ -51,6 +53,7 @@ func init() {
 	rootCmd.Flags().StringVar(&protoFile, "proto_file", "", "`proto_file` to be used for decoding kafka message. Required for `wire_format=proto`")
 	rootCmd.Flags().StringSliceVar(&includePaths, "include_paths", []string{}, "`include_paths` containing dependencies of proto. Required for `wire_format=proto`")
 	rootCmd.Flags().StringVar(&messageType, "message_type", "", "proto message `type` to use for decoding . Required for `wire_format=proto`")
+	rootCmd.Flags().Int64Var(&offset, "offset", -1, "kafka offset to start consuming from. Possible Values: -1=latest, -2=earliest, n=nth offset")
 	rootCmd.Flags().Var(enumflag.New(&wireForamt, "wire_format", wire.FormatIDs, enumflag.EnumCaseSensitive),
 		"wire_format",
 		"Wire format of messages in topic",
