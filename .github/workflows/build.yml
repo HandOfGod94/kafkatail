@@ -1,0 +1,26 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+
+    - name: Lint
+      run: |
+        make setup-tools
+        make quality-check
+
+    - name: Test
+      run: 	go test -timeout 30s -count=1 -race ./...

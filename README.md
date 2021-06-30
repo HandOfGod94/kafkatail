@@ -1,7 +1,7 @@
 # Kafkatail
 
-:construction: Work In Progress :construction:  
-:construction: Proceed with caution :construction:
+:construction: **Work In Progress** :construction:  
+:construction: **Proceed with caution** :construction:
 
 - [Kafkatail](#kafkatail)
   - [Overview](#overview)
@@ -12,7 +12,7 @@
 
 ## Overview
 
-Tail kafka logs on console from a topic having messages in any format: Plaintext, proto, ...
+A CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ...
 
 ## Installation
 
