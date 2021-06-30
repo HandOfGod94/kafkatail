@@ -1,5 +1,7 @@
 # Kafkatail
 
+[![build](https://github.com/HandOfGod94/kafkatail/actions/workflows/build.yml/badge.svg)](https://github.com/HandOfGod94/kafkatail/actions/workflows/build.yml)
+
 :construction: **Work In Progress** :construction:  
 :construction: **Proceed with caution** :construction:
 
