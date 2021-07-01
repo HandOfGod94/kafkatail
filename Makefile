@@ -10,7 +10,7 @@ install:
 
 quality-check:
 	staticcheck ./...
-	gocyclo -over 15 .
+	gocyclo -over 15 -ignore "testdata/" .
 	gocognit -over 15 .
 
 clean-integration:

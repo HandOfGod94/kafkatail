@@ -44,7 +44,7 @@ jobs:
     - name: Lint
       run: |
         make setup-tools
-        make quality-check
+        staticcheck ./...
 
     - name: Test
       run: 	go test -timeout 30s -count=1 -race ./...

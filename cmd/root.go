@@ -67,7 +67,7 @@ func init() {
 	rootCmd.Flags().StringVar(&messageType, "message_type", "", "proto message `type` to use for decoding . Required for `wire_format=proto`")
 	rootCmd.Flags().Int64Var(&offset, "offset", -1, "kafka offset to start consuming from. Possible Values: -1=latest, -2=earliest, n=nth offset")
 	rootCmd.Flags().IntVar(&partition, "partition", 0, "kafka partition to consume from")
-	rootCmd.Flags().StringVar(&fromDateTime, "from_datetime", zeroTime, "time from which you want to tail in RFC3339 datetime format")
+	rootCmd.Flags().StringVar(&fromDateTime, "from_datetime", zeroTime, "tail from specific past datetime in RFC3339 format")
 	rootCmd.Flags().Var(enumflag.New(&wireForamt, "wire_format", wire.FormatIDs, enumflag.EnumCaseSensitive),
 		"wire_format",
 		"Wire format of messages in topic",

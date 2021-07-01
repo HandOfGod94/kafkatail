@@ -9,6 +9,7 @@
   - [Overview](#overview)
   - [Installation](#installation)
   - [QuickStart](#quickstart)
+  - [Usage](#usage)
   - [Known Limitation](#known-limitation)
   - [Development](#development)
 
@@ -41,6 +42,29 @@ kafkatail -b localhost:9093 --proto_file=foo.proto --include_paths=/usr/dir1,/us
 # consume from all paritions on a topic
 # Note. Currently only works by registering a kafka-consumer-group
 kafkatail -b localhost:9093 --group_id=mygroup foo-topic
+```
+
+## Usage
+
+```
+Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
+on console
+
+Usage:
+  kafkatail [flags] topic
+
+Flags:
+  -b, --bootstrap_servers bootstrap_servers   list of kafka bootstrap_servers separated by comma
+      --from_datetime string                  tail from specific past datetime in RFC3339 format (default "0001-01-01T00:00:00Z")
+      --group_id group_id                     [Optional] kafka consumer group_id to be used for subscribing to topic
+  -h, --help                                  help for kafkatail
+      --include_paths include_paths           include_paths containing dependencies of proto. Required for `wire_format=proto`
+      --message_type type                     proto message type to use for decoding . Required for `wire_format=proto`
+      --offset int                            kafka offset to start consuming from. Possible Values: -1=latest, -2=earliest, n=nth offset (default -1)
+      --partition int                         kafka partition to consume from
+      --proto_file proto_file                 proto_file to be used for decoding kafka message. Required for `wire_format=proto`
+  -v, --version                               version for kafkatail
+      --wire_format wire_format[=plaintext]   Wire format of messages in topic (default plaintext)
 ```
 
 ## Known Limitation
