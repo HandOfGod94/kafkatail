@@ -28,10 +28,9 @@ const appVersion = "0.1.0"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "kafkatail [flags] topic",
-	Short: "Tail kafka logs of any wire format",
-	Long: `Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
-on console`,
+	Use:     "kafkatail [flags] topic",
+	Short:   "Tail kafka logs of any wire format",
+	Long:    `Tail kafka messages from any topic, of any wire format on console (plaintext, protobuf)`,
 	Version: appVersion,
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

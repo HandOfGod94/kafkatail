@@ -106,7 +106,7 @@ func TestConsume_Errors(t *testing.T) {
 		topic            string
 		expectedErr      string
 	}{
-		{"with invalid brokers config", []string{"foo:9093"}, "test_topic", "no such host"},
+		{"with invalid brokers config", []string{"foo:9093"}, "test_topic", "lookup foo:"},
 		{"with invalid topic", []string{"localhost:9093"}, "nonexistent_topic", "deadline exceeded"},
 	}
 	for _, tc := range testCases {

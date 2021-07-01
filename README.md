@@ -47,8 +47,7 @@ kafkatail -b localhost:9093 --group_id=mygroup foo-topic
 ## Usage
 
 ```
-Print kafka messages from any topic, of any wire format (avro, plaintext, protobuf)
-on console
+Tail kafka messages from any topic, of any wire format on console (plaintext, protobuf)
 
 Usage:
   kafkatail [flags] topic
@@ -65,6 +64,7 @@ Flags:
       --proto_file proto_file                 proto_file to be used for decoding kafka message. Required for `wire_format=proto`
   -v, --version                               version for kafkatail
       --wire_format wire_format[=plaintext]   Wire format of messages in topic (default plaintext)
+
 ```
 
 ## Known Limitation
@@ -73,7 +73,7 @@ Flags:
   When you don't specific `--partition` arg while starting `kafkatail`, it defaults to `partition 0`.  
   Although if you specify `--group_id`, it will tail from all the partition, but you will have an extra consumer group entry
   on kafka topic.
-* No avro, thirft, <custom> decoding support
+* No avro, thirft, <custom> decoding support yet.  
   Only supports `protobuf` and `plaintext` for now
 
 ## Development
