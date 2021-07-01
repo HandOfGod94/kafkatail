@@ -33,22 +33,6 @@ func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic stri
 	}
 }
 
-func createTopic(t *testing.T, ctx context.Context, topic string) {
-	resp, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
-		Topics: []kafka.TopicConfig{{Topic: topic, NumPartitions: 1, ReplicationFactor: 1}},
-	})
-
-	if err != nil {
-		t.Log("failed to create topic:", err)
-		t.FailNow()
-	}
-
-	if resp.Errors[topic] != nil {
-		t.Logf("failed to create topic. errors: %+v", resp.Errors)
-		t.FailNow()
-	}
-}
-
 func createTopicWithConfig(t *testing.T, ctx context.Context, topic kafka.TopicConfig) {
 	resp, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
 		Topics: []kafka.TopicConfig{topic},
