@@ -4,7 +4,6 @@ on: workflow_dispatch
 
 jobs:
   goreleaser:
-    if: github.ref == 'refs/heads/master' # Only run this job if it is on the master branch
     runs-on: ubuntu-latest
     steps:
       -
