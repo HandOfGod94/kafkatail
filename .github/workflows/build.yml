@@ -48,3 +48,8 @@ jobs:
 
     - name: Test
       run: 	go test -timeout 30s -count=1 -race ./...
+
+    - name: Run Integration Tests
+      run: |
+        go install
+	      go test -p 1 -count=1 -timeout 60s -tags=integration ./integration-tests
