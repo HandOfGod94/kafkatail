@@ -32,9 +32,9 @@ func TestKafkatailBase(t *testing.T) {
 			defer cancel()
 			appName, args := appNameAndArgs(tc.cmd)
 			cmd := exec.CommandContext(ctx, appName, args...)
-			stdout, err := cmd.StdoutPipe()
+			out, err := getOutput(cmd, tc.wantErr)
 			if err != nil {
-				t.Log("failed to create stdout pipe:", err)
+				t.Log("failed to create output pipe:", err)
 				t.FailNow()
 			}
 
@@ -44,9 +44,9 @@ func TestKafkatailBase(t *testing.T) {
 				t.FailNow()
 			}
 			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test-base", []byte(tc.want))
-			got, err := io.ReadAll(stdout)
+			got, err := io.ReadAll(out)
 			if err != nil {
-				t.Log("failed to read stdout:", err)
+				t.Log("failed to read output:", err)
 				t.FailNow()
 			}
 
