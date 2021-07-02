@@ -52,4 +52,4 @@ jobs:
     - name: Run Integration Tests
       run: |
         go install
-	      go test -p 1 -count=1 -timeout 60s -tags=integration ./integration-tests
+        go test -p 1 -count=1 -timeout 60s -tags=integration ./integration-tests
