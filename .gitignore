@@ -1,3 +1,4 @@
 /out/
 coverage.out
 .vscode/
+dist/
