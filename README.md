@@ -31,7 +31,7 @@ go install github.com/handofgod94/kafkatail@v0.1.0
 
 ## QuickStart
 
-Frequently used commands to start with
+Examples
 ```sh
 # check kafka version installed
 kafkatail --version
@@ -45,6 +45,14 @@ kafkatail --bootstrap_servers=localhost:9093 foo-topic # or kafkatail -b localho
 # tail a topic with protobuf encoded messages from a kafka cluster
 # message_type = type of `message` defined in `.proto` file which you want to decode in
 kafkatail -b localhost:9093 --proto_file=foo.proto --include_paths=/usr/dir1,/usr/dir2 --message_type=Bar foo-topic
+
+# tail from specific offset
+# Note. if you don't provide partition args, it defaults to Partition 0
+kafkatail --bootstrap_servers=localhost:9093 --offeset 30 foo-topic 
+
+# tail from specific datetime
+# Note. if you don't provide partition args, it defaults to Partition 0
+kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-05-03T12:30:00Z  foo-topic 
 
 # consume from all paritions on a topic
 # Note. Currently only works by registering a kafka-consumer-group
