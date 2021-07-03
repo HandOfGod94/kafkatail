@@ -9,9 +9,12 @@ builds:
       - windows
       - darwin
 archives:
-  - format: binary
-    files:
-      - none*
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
 checksum:
   name_template: 'checksums.txt'
 changelog:
@@ -23,3 +26,4 @@ changelog:
       - '^ci:'
       - '^refactor:'
       - '^build:'
+      - '^release:'

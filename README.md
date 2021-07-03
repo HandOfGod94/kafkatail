@@ -20,8 +20,9 @@ A CLI app to tail kafka logs on console from any topic having messages in any fo
 
 ## Installation
 
-> Currently it's not released yet, but soon will be available for multiple platforms  
-> via idiomatic package managers
+Download binaries from `Release`
+
+> Soon will be available via package managers
 
 ## QuickStart
 
