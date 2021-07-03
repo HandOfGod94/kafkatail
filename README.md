@@ -80,7 +80,7 @@ Flags:
   When you don't specific `--partition` arg while starting `kafkatail`, it defaults to `partition 0`.  
   Although if you specify `--group_id`, it will tail from all the partition, but you will have an extra consumer group entry
   on kafka topic.
-* No avro, thirft, <custom> decoding support yet.  
+* No `avro`, `thirft`, `<custom>` decoding support yet.  
   Only supports `protobuf` and `plaintext` for now
 
 ## Development
