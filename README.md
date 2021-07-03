@@ -43,7 +43,7 @@ kafkatail --help # or kafkatail -h
 kafkatail --bootstrap_servers=localhost:9093 foo-topic # or kafkatail -b localhost:9093 foo-topic
 
 # tail a topic with protobuf encoded messages from a kafka cluster
-# message_type = type of `message` defined in `.proto` file which you want to decode in
+# message_type = type of `message` to use for decoding. This must be defined in `.proto` file.
 kafkatail -b localhost:9093 --proto_file=foo.proto --include_paths=/usr/dir1,/usr/dir2 --message_type=Bar foo-topic
 
 # tail from specific offset
