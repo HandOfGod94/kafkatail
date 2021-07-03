@@ -6,17 +6,19 @@
 :construction: **Work In Progress** :construction:  
 :construction: **Proceed with caution** :construction:
 
+## Overview
+
+CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ...
+
+## Contents
 - [Kafkatail](#kafkatail)
   - [Overview](#overview)
+  - [Contents](#contents)
   - [Installation](#installation)
   - [QuickStart](#quickstart)
   - [Usage](#usage)
   - [Known Limitation](#known-limitation)
   - [Development](#development)
-
-## Overview
-
-A CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ...
 
 ## Installation
 
