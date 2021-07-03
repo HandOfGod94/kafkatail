@@ -22,6 +22,11 @@ A CLI app to tail kafka logs on console from any topic having messages in any fo
 
 Download binaries from `Release`
 
+To install via go toolchain
+```sh
+go install github.com/handofgod94/kafkatail@v0.1.0
+```
+
 > Soon will be available via package managers
 
 ## QuickStart
