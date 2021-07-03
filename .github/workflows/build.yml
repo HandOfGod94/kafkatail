@@ -25,4 +25,4 @@ jobs:
         with:
           distribution: goreleaser
           version: v0.172.1
-          args: build --rm-dist
+          args: build --snapshot --rm-dist
