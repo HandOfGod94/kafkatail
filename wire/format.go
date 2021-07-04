@@ -15,7 +15,3 @@ var FormatIDs = map[Format][]string{
 	Proto:     {"proto"},
 	Avro:      {"avro"},
 }
-
-type Decoder interface {
-	Decode([]byte) (string, error)
-}
