@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
+	"gopkg.in/tomb.v2"
 )
 
 var (
@@ -41,14 +42,24 @@ var rootCmd = &cobra.Command{
 			log.Fatal("invalid datetime provided:", err)
 		}
 
-		err = consumer.Options{
+		tb, ctx := tomb.WithContext(context.Background())
+
+		outChan := consumer.Options{
 			GroupID:      groupID,
 			Offset:       offset,
 			Partition:    partition,
 			FromDateTime: parsedDT,
-		}.New(bootstrapServers, topic).Consume(context.Background(), os.Stdout, decoderFactory(wireForamt))
+		}.New(bootstrapServers, topic).Consume(ctx, tb, decoderFactory(wireForamt))
 
-		log.Fatal("error while consuming messages:", err)
+		for {
+			select {
+			case <-tb.Dead():
+				err := tb.Err()
+				log.Fatal("Stopping Application. error while consuming messages:", err)
+			case msg := <-outChan:
+				fmt.Println(msg)
+			}
+		}
 	},
 }
 

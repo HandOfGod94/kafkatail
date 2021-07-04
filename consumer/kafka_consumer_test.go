@@ -3,6 +3,7 @@ package consumer_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/tomb.v2"
 )
 
 const defaultTimeout = 5 * time.Second
@@ -67,21 +69,25 @@ func TestConsumeSuccses(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 
-			w := bytes.NewBufferString("")
 			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 			defer cancel()
+			tb, tctx := tomb.WithContext(ctx)
 
 			c := consumer.New(tc.fields.bootstrapServers, tc.fields.topic)
-			go func(ctx context.Context) {
-				c.Consume(ctx, w, wire.NewPlaintextDecoder())
-			}(ctx)
+			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder())
 
 			sendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("hello"))
 			sendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("world"))
 
-			<-ctx.Done()
-			got := w.String()
-			assert.Contains(t, got, tc.want)
+			got := bytes.NewBufferString("")
+			select {
+			case msg := <-outChan:
+				fmt.Fprint(got, msg)
+			case <-ctx.Done():
+				// no op
+			}
+
+			assert.Contains(t, got.String(), tc.want)
 		})
 	}
 }
@@ -110,13 +116,14 @@ func TestConsume_Errors(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			w := bytes.NewBufferString("")
 			c := consumer.New(tc.bootstrapServers, tc.topic)
 			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 			defer cancel()
-			err := c.Consume(ctx, w, wire.NewPlaintextDecoder())
+			tb, tctx := tomb.WithContext(ctx)
+			_ = c.Consume(tctx, tb, wire.NewPlaintextDecoder())
 
-			assert.Contains(t, err.Error(), tc.expectedErr)
+			<-tb.Dead()
+			assert.Contains(t, tb.Err().Error(), tc.expectedErr)
 		})
 	}
 }

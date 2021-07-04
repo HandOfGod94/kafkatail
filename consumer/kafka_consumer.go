@@ -1,15 +1,18 @@
 package consumer
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"time"
 
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
+	"gopkg.in/tomb.v2"
 )
+
+type Message = string
 
 type kafkaConsumer struct {
 	bootstrapServers []string
@@ -41,28 +44,36 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 	}
 }
 
-func (kc *kafkaConsumer) Consume(ctx context.Context, w io.Writer, decoder wire.Decoder) error {
+func (kc *kafkaConsumer) Consume(ctx context.Context, tb *tomb.Tomb, decoder wire.Decoder) <-chan Message {
 	r, err := kc.initReader(ctx)
 	if err != nil {
 		log.Fatal("failed to initialize kafka consumer:", err)
 	}
 
-	for {
-		m, err := r.ReadMessage(ctx)
-		if err != nil {
-			// TODO: return custom wrapped error with contextual info
-			return err
-		}
+	outChan := make(chan string)
 
-		value, err := decoder.Decode(m.Value)
-		if err != nil {
-			log.Printf("failed to decode message. error: %v", err)
-			continue
+	tb.Go(func() error {
+		for {
+			m, err := r.ReadMessage(ctx)
+			if err != nil {
+				// TODO: return custom wrapped error with contextual info
+				return err
+			}
+
+			value, err := decoder.Decode(m.Value)
+			if err != nil {
+				log.Printf("failed to decode message. error: %v", err)
+				return err
+			}
+			msg := bytes.NewBufferString("")
+			fmt.Fprintln(msg, "====================Message====================")
+			fmt.Fprintf(msg, "============Partition: %v, Offset: %v==========\n", m.Partition, m.Offset)
+			fmt.Fprintln(msg, value)
+			outChan <- msg.String()
 		}
-		fmt.Fprintln(w, "====================Message====================")
-		fmt.Fprintf(w, "============Partition: %v, Offset: %v==========\n", m.Partition, m.Offset)
-		fmt.Fprintln(w, value)
-	}
+	})
+
+	return outChan
 
 }
 
