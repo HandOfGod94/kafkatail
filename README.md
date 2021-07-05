@@ -25,8 +25,15 @@ CLI app to tail kafka logs on console from any topic having messages in any form
 Download binaries from `Release`
 
 To install via go toolchain
+
+* For Go 1.16 or higher
 ```sh
 go install github.com/handofgod94/kafkatail@v0.1.0
+```
+
+* For go version <= 1.15
+```sh
+GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.0
 ```
 
 > Soon will be available via package managers
