@@ -49,7 +49,7 @@ func TestConsumeSuccses(t *testing.T) {
 			want:      "hello",
 		},
 		{
-			desc: "with offsett option",
+			desc: "with offset option",
 			fields: fields{
 				bootstrapServers: []string{"localhost:9093"},
 				topic:            "kafkatail-test-topic",

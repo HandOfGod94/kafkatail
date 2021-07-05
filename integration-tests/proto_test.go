@@ -38,8 +38,9 @@ func TestKafkatalProto(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	createTopic(t, context.Background(), "kafkatail-test-proto")
-	defer deleteTopic(t, context.Background(), "kafkatail-test-proto")
+	const topic = "kafkatail-test-proto"
+	createTopic(t, context.Background(), topic)
+	defer deleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -64,7 +65,7 @@ func TestKafkatalProto(t *testing.T) {
 				t.FailNow()
 			}
 
-			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test-proto", msg)
+			sendMessage(t, context.Background(), localBroker, topic, msg)
 			got, err := io.ReadAll(out)
 			if err != nil {
 				t.Log("failed to read stdout:", err)

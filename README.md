@@ -54,7 +54,7 @@ kafkatail --bootstrap_servers=localhost:9093 --offeset 30 foo-topic
 
 # tail from specific datetime
 # Note. if you don't provide partition args, it defaults to Partition 0
-kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-05-03T12:30:00Z  foo-topic 
+kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-05-03T12:30:00Z foo-topic 
 
 # consume from all paritions on a topic
 # Note. Currently only works by registering a kafka-consumer-group

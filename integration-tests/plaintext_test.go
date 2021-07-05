@@ -32,28 +32,11 @@ func TestKafkatailPlaintext(t *testing.T) {
 			message: "hello world",
 			want:    "hello world",
 		},
-		{
-			desc:    "with offset option",
-			cmd:     "kafkatail --bootstrap_servers=localhost:9093 --offset=-2 kafkatail-test",
-			message: "hello world",
-			want:    "Offset: 0",
-		},
-		{
-			desc:    "with partition option",
-			cmd:     "kafkatail --bootstrap_servers=localhost:9093 --partition=0 kafkatail-test",
-			message: "hello world",
-			want:    "Partition: 0",
-		},
-		{
-			desc:    "with `from_datetime` option",
-			cmd:     "kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-06-28T15:04:23Z kafkatail-test",
-			message: "hello world",
-			want:    "hello world",
-		},
 	}
 
-	createTopic(t, context.Background(), "kafkatail-test")
-	defer deleteTopic(t, context.Background(), "kafkatail-test")
+	const topic = "kafkatail-test"
+	createTopic(t, context.Background(), topic)
+	defer deleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -71,7 +54,7 @@ func TestKafkatailPlaintext(t *testing.T) {
 				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
 				t.FailNow()
 			}
-			sendMessage(t, context.Background(), []string{"localhost:9093"}, "kafkatail-test", []byte(tc.message))
+			sendMessage(t, context.Background(), localBroker, topic, []byte(tc.message))
 			got, err := io.ReadAll(out)
 			if err != nil {
 				t.Log("failed to read stdout:", err)

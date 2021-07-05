@@ -13,8 +13,10 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+var localBroker = []string{"localhost:9093"}
+
 var kafkaRawClient = kafka.Client{
-	Addr:      kafka.TCP("localhost:9093"),
+	Addr:      kafka.TCP(localBroker...),
 	Timeout:   5 * time.Second,
 	Transport: nil,
 }
@@ -49,7 +51,7 @@ func createTopic(t *testing.T, ctx context.Context, topic string) {
 	}
 
 	if resp.Errors[topic] != nil {
-		t.Logf("failed to create topic. errors: %+v", resp.Errors)
+		t.Logf("failed to create topic. errors: %v", resp.Errors[topic])
 		t.FailNow()
 	}
 }
@@ -65,7 +67,7 @@ func deleteTopic(t *testing.T, ctx context.Context, topic string) {
 	}
 
 	if resp.Errors[topic] != nil {
-		t.Logf("failed to create topic. errors: %+v", resp.Errors)
+		t.Logf("failed to delete topic. errors: %v", resp.Errors[topic])
 		t.FailNow()
 	}
 }
