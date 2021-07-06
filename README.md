@@ -25,12 +25,12 @@ To install via go toolchain
 
 * For Go 1.16 or higher
 ```sh
-go install github.com/handofgod94/kafkatail@v0.1.0
+go install github.com/handofgod94/kafkatail@v0.1.1
 ```
 
 * For go version <= 1.15
 ```sh
-GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.0
+GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.1
 ```
 
 > Soon will be available via package managers
