@@ -110,6 +110,6 @@ make test
 # to run integration tests
 make integration-tests
 
-# to clean up integration teste env
+# to clean up integration test env
 make clean-integration
 ```

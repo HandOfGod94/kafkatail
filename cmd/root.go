@@ -33,7 +33,7 @@ var rootCmd = &cobra.Command{
 	Short:   "Tail kafka logs of any wire format",
 	Long:    `Tail kafka messages from any topic, of any wire format on console (plaintext, protobuf)`,
 	Version: appVersion,
-	Args:    cobra.ExactArgs(1),
+	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		topic := args[0]
 

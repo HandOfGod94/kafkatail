@@ -61,6 +61,18 @@ func TestKafkatailBase(t *testing.T) {
 			msg:  "hello world",
 			want: "hello world",
 		},
+		{
+			desc: "with shorthand flag",
+			cmd:  "kafkatail -b=localhost:9093 --offset=-2 kafkatail-test-base",
+			msg:  "hello world",
+			want: "hello world",
+		},
+		{
+			desc: "with spaces instead of `=` in command",
+			cmd:  "kafkatail -b localhost:9093 --offset=-2 --group_id foo_id kafkatail-test-base",
+			msg:  "hello world",
+			want: "hello world",
+		},
 	}
 
 	const topic = "kafkatail-test-base"
