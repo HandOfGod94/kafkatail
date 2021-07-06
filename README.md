@@ -11,16 +11,13 @@
 CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ...
 
 ## Contents
-- [Kafkatail](#kafkatail)
-  - [Overview](#overview)
-  - [Contents](#contents)
-  - [Installation](#installation)
-  - [QuickStart](#quickstart)
-  - [Usage](#usage)
-  - [Known Limitation](#known-limitation)
-  - [Development](#development)
+- [Installation](#installation)
+- [QuickStart](#quickstart)
+- [Usage](#usage)
+- [Known Limitation](#known-limitation)
+- [Development](#development)
 
-## Installation
+### Installation
 
 Download binaries from `Release`
 
@@ -38,7 +35,7 @@ GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.0
 
 > Soon will be available via package managers
 
-## QuickStart
+### QuickStart
 
 Examples
 ```sh
@@ -68,7 +65,7 @@ kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-05-03T12:30:00
 kafkatail -b localhost:9093 --group_id=mygroup foo-topic
 ```
 
-## Usage
+### Usage
 
 ```
 Tail kafka messages from any topic, of any wire format on console (plaintext, protobuf)
@@ -91,7 +88,7 @@ Flags:
 
 ```
 
-## Known Limitation
+### Known Limitation
 
 * No/Limited support for consuming from multiple partitions at same time:
   When you don't specific `--partition` arg while starting `kafkatail`, it defaults to `partition 0`.  
@@ -100,7 +97,7 @@ Flags:
 * No `avro`, `thirft`, `<custom>` decoding support yet.  
   Only supports `protobuf` and `plaintext` for now
 
-## Development
+### Development
 * Minimum go version: `1.16`
 
 ```sh
