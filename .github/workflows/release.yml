@@ -2,6 +2,8 @@ name: release
 
 on: workflow_dispatch
 
+env:
+  LATEST_RELEASE_TAG: $(git describe --abbrev=0)
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -19,6 +21,6 @@ jobs:
         with:
           distribution: goreleaser
           version: v0.172.1
-          args: release --rm-dist --release-notes <(cat changes/$(git describe --abbrev=0).md)
+          args: release --rm-dist --release-notes=${{ env.GITHUB_WORKSPACE }}/changes/${{ env.LATEST_RELEASE_TAG }}.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
