@@ -27,3 +27,5 @@ changelog:
       - '^refactor:'
       - '^build:'
       - '^release:'
+      - '^chore:'
+      - '^Merge'
