@@ -23,7 +23,7 @@ func TestKafkatailBase(t *testing.T) {
 		{
 			desc:    "print error for missing required args",
 			cmd:     "kafkatail",
-			want:    `accepts 1 arg(s)`,
+			want:    `requires at least 1 arg(s)`,
 			wantErr: true,
 		},
 		{
