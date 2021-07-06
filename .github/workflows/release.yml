@@ -19,6 +19,6 @@ jobs:
         with:
           distribution: goreleaser
           version: v0.172.1
-          args: release --rm-dist
+          args: release --rm-dist --release-notes <(cat changes/$(git describe --abbrev=0).md)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
