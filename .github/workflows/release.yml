@@ -21,6 +21,6 @@ jobs:
         with:
           distribution: goreleaser
           version: v0.172.1
-          args: release --rm-dist --release-notes=${{ env.GITHUB_WORKSPACE }}/changes/${{ env.RELEASE_VERSION }}.md
+          args: release --rm-dist --release-notes=./changes/${{ env.RELEASE_VERSION }}.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
