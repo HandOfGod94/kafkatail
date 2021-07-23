@@ -10,63 +10,43 @@
 
 CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ...
 
-## Contents
+**Contents**  
 - [Installation](#installation)
 - [QuickStart](#quickstart)
 - [Usage](#usage)
+- [Examples](#examples)
 - [Known Limitation](#known-limitation)
 - [Development](#development)
 
 ### Installation
 
-Download binaries from `Release`
+Feel free to use any of the available methods
 
-To install via go toolchain
+* Download executable binaries from [Release](https://github.com/HandOfGod94/kafkatail/releases) page
+* Install via `go` toolchain
+  + For Go 1.16 or higher
+    ```sh
+    go install github.com/handofgod94/kafkatail@v0.1.1
+    ```
 
-* For Go 1.16 or higher
-```sh
-go install github.com/handofgod94/kafkatail@v0.1.1
-```
-
-* For go version <= 1.15
-```sh
-GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.1
-```
+    * For go version <= 1.15
+    ```sh
+    GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.1
+    ```
+    The go binary will be installed in `$GOPATH/bin`
 
 > Soon will be available via package managers
 
 ### QuickStart
 
-Examples
-```sh
-# check kafka version installed
-kafkatail --version
-
-# Get help
-kafkatail --help # or kafkatail -h
-
-# tail a topic for a kafka cluster
-kafkatail --bootstrap_servers=localhost:9093 foo-topic # or kafkatail -b localhost:9093 foo-topic
-
-# tail a topic with protobuf encoded messages from a kafka cluster
-# message_type = type of `message` to use for decoding. This must be defined in `.proto` file.
-kafkatail --wire_format=proto -b localhost:9093 --proto_file=foo.proto --include_paths=/usr/dir1,/usr/dir2 --message_type=Bar foo-topic
-
-# tail from specific offset
-# Note. if you don't provide partition args, it defaults to Partition 0
-kafkatail --bootstrap_servers=localhost:9093 --offeset 30 foo-topic 
-
-# tail from specific datetime
-# Note. if you don't provide partition args, it defaults to Partition 0
-kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-05-03T12:30:00Z foo-topic 
-
-# consume from all paritions on a topic
-# Note. Currently only works by registering a kafka-consumer-group
-kafkatail -b localhost:9093 --group_id=mygroup foo-topic
+`$ kafkatail --version`
+```
+kafkatail version 0.1.0
 ```
 
 ### Usage
 
+`$ kafkatail --help`
 ```
 Tail kafka messages from any topic, of any wire format on console (plaintext, protobuf)
 
@@ -85,7 +65,28 @@ Flags:
       --proto_file proto_file                 proto_file to be used for decoding kafka message. Required for `wire_format=proto`
   -v, --version                               version for kafkatail
       --wire_format wire_format[=plaintext]   Wire format of messages in topic (default plaintext)
+```
 
+### Examples
+```sh
+# tail a topic for a kafka cluster
+kafkatail --bootstrap_servers=localhost:9093 foo-topic # or kafkatail -b localhost:9093 foo-topic
+
+# tail a topic with protobuf encoded messages from a kafka cluster
+# message_type = type of `message` to use for decoding. This must be defined in `.proto` file.
+kafkatail --wire_format=proto \
+    --bootstrap_servers=localhost:9093 \
+    --include_paths=/usr/dir1,/usr/dir2
+    --proto_file=foo.proto \
+    --message_type=Bar foo-topic
+
+# tail from specific offset
+# Note. if you don't provide partition args, it defaults to Partition 0
+kafkatail --bootstrap_servers=localhost:9093 --offeset 30 foo-topic 
+
+# tail from specific datetime
+# Note. if you don't provide partition args, it defaults to Partition 0
+kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-05-03T12:30:00Z foo-topic 
 ```
 
 ### Known Limitation
