@@ -21,6 +21,11 @@ func TestKafkatailBase(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			desc: "check version",
+			cmd:  "kafkatail --version",
+			want: "dev",
+		},
+		{
 			desc:    "print error for missing required args",
 			cmd:     "kafkatail",
 			want:    `requires at least 1 arg(s)`,
@@ -31,11 +36,6 @@ func TestKafkatailBase(t *testing.T) {
 			cmd:     "kafkatail --bootstrap_servers=1.1.1.1:9093 --wire_format=foo test",
 			want:    "must be 'avro', 'plaintext', 'proto'",
 			wantErr: true,
-		},
-		{
-			desc: "check version",
-			cmd:  "kafkatail --version",
-			want: "0.1.0",
 		},
 		{
 			desc: "prints messages for valid args",

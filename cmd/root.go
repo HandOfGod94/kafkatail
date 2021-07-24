@@ -25,7 +25,7 @@ var (
 	fromDateTime     string
 )
 
-const appVersion = "0.1.0"
+const appVersion = "dev"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -34,12 +34,28 @@ var rootCmd = &cobra.Command{
 	Long:    `Tail kafka messages from any topic, of any wire format on console (plaintext, protobuf)`,
 	Version: appVersion,
 	Args:    cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	Example: `
+	# tail messages from a topic
+	kafkatail --bootstrap_servers=localhost:9093 foo-topic
+
+	# tail proto messages from a topic
+	kafkatail --wire_format=proto --bootstrap_servers=localhost:9093 --include_paths=/path/dir --proto_file=bar.proto --message_type=MyProtoType foo-topic
+
+	# tail messages from an offset. Default: -1 (latest). For earliets, use offset=-2
+	kafkatail --bootstrap_servers=localhost:9093 --offset=12 foo-topic
+
+	# tail messages from specific time
+	kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-01-12T23:00:00Z foo-topic
+
+	# tail messages from specific partition. Default: 0
+	kafkatail --bootstrap_servers=localhost:9093 --parition=5 foo-topic
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		topic := args[0]
 
 		parsedDT, err := time.Parse(time.RFC3339, fromDateTime)
 		if err != nil {
-			log.Fatal("invalid datetime provided:", err)
+			return fmt.Errorf("invalid datetime provided: %w", err)
 		}
 
 		tb, ctx := tomb.WithContext(context.Background())
