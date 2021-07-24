@@ -36,19 +36,19 @@ var rootCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
 	Example: `
 	# tail messages from a topic
-	kafkatail --bootstrap_servers=localhost:9093 foo-topic
+	kafkatail --bootstrap_servers=localhost:9093 kafkatail-test
 
 	# tail proto messages from a topic
-	kafkatail --wire_format=proto --bootstrap_servers=localhost:9093 --include_paths=/path/dir --proto_file=bar.proto --message_type=MyProtoType foo-topic
+	kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=starwars.proto --include_paths="../testdata" --message_type=Human kafkatail-test-proto
 
 	# tail messages from an offset. Default: -1 (latest). For earliets, use offset=-2
-	kafkatail --bootstrap_servers=localhost:9093 --offset=12 foo-topic
+	kafkatail --bootstrap_servers=localhost:9093 --offset=12 kafkatail-test-base
 
 	# tail messages from specific time
-	kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-01-12T23:00:00Z foo-topic
+	kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-06-28T15:04:23Z kafkatail-test-base
 
 	# tail messages from specific partition. Default: 0
-	kafkatail --bootstrap_servers=localhost:9093 --parition=5 foo-topic
+	kafkatail --bootstrap_servers=localhost:9093 --partition=5 kafkatail-test-base
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		topic := args[0]

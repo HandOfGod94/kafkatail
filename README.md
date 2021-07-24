@@ -41,7 +41,7 @@ Feel free to use any of the available methods
 
 `$ kafkatail --version`
 ```
-kafkatail version 0.1.0
+kafkatail version 0.1.1
 ```
 
 ### Usage
@@ -69,24 +69,20 @@ Flags:
 
 ### Examples
 ```sh
-# tail a topic for a kafka cluster
-kafkatail --bootstrap_servers=localhost:9093 foo-topic # or kafkatail -b localhost:9093 foo-topic
+# tail messages from a topic
+kafkatail --bootstrap_servers=localhost:9093 foo-topic
 
-# tail a topic with protobuf encoded messages from a kafka cluster
-# message_type = type of `message` to use for decoding. This must be defined in `.proto` file.
-kafkatail --wire_format=proto \
-    --bootstrap_servers=localhost:9093 \
-    --include_paths=/usr/dir1,/usr/dir2
-    --proto_file=foo.proto \
-    --message_type=Bar foo-topic
+# tail proto messages from a topic
+kafkatail --wire_format=proto --bootstrap_servers=localhost:9093 --include_paths=/path/dir --proto_file=bar.proto --message_type=MyProtoType foo-topic
 
-# tail from specific offset
-# Note. if you don't provide partition args, it defaults to Partition 0
-kafkatail --bootstrap_servers=localhost:9093 --offeset 30 foo-topic 
+# tail messages from an offset. Default: -1 (latest). For earliets, use offset=-2
+kafkatail --bootstrap_servers=localhost:9093 --offset=12 foo-topic
 
-# tail from specific datetime
-# Note. if you don't provide partition args, it defaults to Partition 0
-kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-05-03T12:30:00Z foo-topic 
+# tail messages from specific time
+kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-01-12T23:00:00Z foo-topic
+
+# tail messages from specific partition. Default: 0
+kafkatail --bootstrap_servers=localhost:9093 --parition=5 foo-topic
 ```
 
 ### Known Limitation
