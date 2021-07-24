@@ -29,7 +29,7 @@ Feel free to use any of the available methods
     go install github.com/handofgod94/kafkatail@v0.1.1
     ```
 
-    * For go version <= 1.15
+  + For go version <= 1.15
     ```sh
     GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.1
     ```
