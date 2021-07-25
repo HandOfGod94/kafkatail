@@ -6,16 +6,14 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
+	"github.com/handofgod94/kafkatail/kafkatest"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/tomb.v2"
 )
-
-const defaultTimeout = 10 * time.Second
 
 func TestConsumeSuccses(t *testing.T) {
 	type fields struct {
@@ -61,24 +59,24 @@ func TestConsumeSuccses(t *testing.T) {
 		},
 	}
 
-	createTopicWithConfig(t, context.Background(), kafka.TopicConfig{
+	kafkatest.CreateTopicWithConfig(t, context.Background(), kafka.TopicConfig{
 		Topic:             "kafkatail-test-topic",
 		NumPartitions:     2,
 		ReplicationFactor: 1,
 	})
-	defer deleteTopic(t, context.Background(), "kafkatail-test-topic")
+	defer kafkatest.DeleteTopic(t, context.Background(), "kafkatail-test-topic")
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 
-			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+			ctx, cancel := context.WithTimeout(context.Background(), kafkatest.DefaultTimeout)
 			defer cancel()
 			tb, tctx := tomb.WithContext(ctx)
 
 			c := consumer.New(tc.fields.bootstrapServers, tc.fields.topic)
 			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder())
 
-			sendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("hello"))
-			sendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("world"))
+			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("hello"))
+			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("world"))
 
 			got := bytes.NewBufferString("")
 			select {
@@ -118,7 +116,7 @@ func TestConsume_Errors(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			c := consumer.New(tc.bootstrapServers, tc.topic)
-			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+			ctx, cancel := context.WithTimeout(context.Background(), kafkatest.DefaultTimeout)
 			defer cancel()
 			tb, tctx := tomb.WithContext(ctx)
 			_ = c.Consume(tctx, tb, wire.NewPlaintextDecoder())
@@ -162,15 +160,15 @@ func TestConsumeWithMultipleParitions(t *testing.T) {
 		},
 	}
 
-	createTopicWithConfig(t, context.Background(), kafka.TopicConfig{
+	kafkatest.CreateTopicWithConfig(t, context.Background(), kafka.TopicConfig{
 		Topic:             topic,
 		NumPartitions:     2,
 		ReplicationFactor: 1,
 	})
-	defer deleteTopic(t, context.Background(), topic)
+	defer kafkatest.DeleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+			ctx, cancel := context.WithTimeout(context.Background(), kafkatest.DefaultTimeout)
 			defer cancel()
 
 			tb, tctx := tomb.WithContext(ctx)
@@ -178,7 +176,7 @@ func TestConsumeWithMultipleParitions(t *testing.T) {
 			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder())
 
 			for partition, msg := range tc.messages {
-				sendMessageToPartition(t, ctx, tc.bootstrapServers, tc.topic, partition, nil, []byte(msg))
+				kafkatest.SendMessageToPartition(t, ctx, tc.bootstrapServers, tc.topic, partition, nil, []byte(msg))
 			}
 
 			var got strings.Builder
