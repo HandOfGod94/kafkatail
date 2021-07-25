@@ -1,19 +1,22 @@
-package consumer_test
+package kafkatest
 
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
-var kafkaRawClient = kafka.Client{
+var DefaultTimeout = 10 * time.Second
+
+var KafkaRawClient = kafka.Client{
 	Addr:      kafka.TCP("localhost:9093"),
-	Timeout:   defaultTimeout,
+	Timeout:   DefaultTimeout,
 	Transport: nil,
 }
 
-func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic string, key, message []byte) {
+func SendMessage(t *testing.T, ctx context.Context, brokers []string, topic string, key, message []byte) {
 	w := &kafka.Writer{
 		Addr:  kafka.TCP(brokers...),
 		Topic: topic,
@@ -33,12 +36,12 @@ func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic stri
 	}
 }
 
-func sendMessageToPartition(t *testing.T, ctx context.Context, brokers []string, topic string, parition int, key, message []byte) {
+func SendMessageToPartition(t *testing.T, ctx context.Context, brokers []string, topic string, parition int, key, message []byte) {
 	record := kafka.Record{
 		Value: kafka.NewBytes(message),
 	}
 	produceReq := kafka.ProduceRequest{Topic: topic, Partition: parition, RequiredAcks: kafka.RequireOne, Records: kafka.NewRecordReader(record)}
-	resp, err := kafkaRawClient.Produce(ctx, &produceReq)
+	resp, err := KafkaRawClient.Produce(ctx, &produceReq)
 
 	if err != nil {
 		t.Log("failed to send produce request to broker:", err)
@@ -51,8 +54,8 @@ func sendMessageToPartition(t *testing.T, ctx context.Context, brokers []string,
 	}
 }
 
-func createTopicWithConfig(t *testing.T, ctx context.Context, topic kafka.TopicConfig) {
-	resp, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
+func CreateTopicWithConfig(t *testing.T, ctx context.Context, topic kafka.TopicConfig) {
+	resp, err := KafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
 		Topics: []kafka.TopicConfig{topic},
 	})
 
@@ -67,8 +70,8 @@ func createTopicWithConfig(t *testing.T, ctx context.Context, topic kafka.TopicC
 	}
 }
 
-func deleteTopic(t *testing.T, ctx context.Context, topic string) {
-	resp, err := kafkaRawClient.DeleteTopics(ctx, &kafka.DeleteTopicsRequest{
+func DeleteTopic(t *testing.T, ctx context.Context, topic string) {
+	resp, err := KafkaRawClient.DeleteTopics(ctx, &kafka.DeleteTopicsRequest{
 		Topics: []string{topic},
 	})
 
