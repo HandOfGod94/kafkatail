@@ -33,6 +33,24 @@ func sendMessage(t *testing.T, ctx context.Context, brokers []string, topic stri
 	}
 }
 
+func sendMessageToPartition(t *testing.T, ctx context.Context, brokers []string, topic string, parition int, key, message []byte) {
+	record := kafka.Record{
+		Value: kafka.NewBytes(message),
+	}
+	produceReq := kafka.ProduceRequest{Topic: topic, Partition: parition, RequiredAcks: kafka.RequireOne, Records: kafka.NewRecordReader(record)}
+	resp, err := kafkaRawClient.Produce(ctx, &produceReq)
+
+	if err != nil {
+		t.Log("failed to send produce request to broker:", err)
+		t.FailNow()
+	}
+
+	if resp.Error != nil {
+		t.Log("failed to produce message: ", resp.Error)
+		t.FailNow()
+	}
+}
+
 func createTopicWithConfig(t *testing.T, ctx context.Context, topic kafka.TopicConfig) {
 	resp, err := kafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
 		Topics: []kafka.TopicConfig{topic},

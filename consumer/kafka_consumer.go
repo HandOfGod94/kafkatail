@@ -83,19 +83,24 @@ func (kc *kafkaConsumer) initReader(ctx context.Context) (*kafka.Reader, error) 
 		Brokers:   kc.bootstrapServers,
 		Topic:     kc.topic,
 		Partition: kc.options.Partition,
+		GroupID:   kc.options.GroupID,
 	})
 
 	if !kc.options.FromDateTime.IsZero() {
 		err := r.SetOffsetAt(ctx, kc.options.FromDateTime)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to set offest to date: %s, %w", kc.options.FromDateTime, err)
 		}
+		return r, nil
+	}
+
+	if kc.options.GroupID != "" {
 		return r, nil
 	}
 
 	err := r.SetOffset(kc.options.Offset)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to set offset to %d, %w", kc.options.Offset, err)
 	}
 
 	return r, nil
