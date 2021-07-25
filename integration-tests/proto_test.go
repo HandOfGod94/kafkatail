@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/handofgod94/kafkatail/kafkatest"
 	"github.com/handofgod94/kafkatail/testdata"
+	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
@@ -39,8 +41,13 @@ func TestKafkatalProto(t *testing.T) {
 		},
 	}
 	const topic = "kafkatail-test-proto"
-	createTopic(t, context.Background(), topic)
-	defer deleteTopic(t, context.Background(), topic)
+	topicConfig := kafka.TopicConfig{
+		Topic:             topic,
+		NumPartitions:     2,
+		ReplicationFactor: 1,
+	}
+	kafkatest.CreateTopicWithConfig(t, context.Background(), topicConfig)
+	defer kafkatest.DeleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -65,7 +72,7 @@ func TestKafkatalProto(t *testing.T) {
 				t.FailNow()
 			}
 
-			sendMessage(t, context.Background(), localBroker, topic, msg)
+			kafkatest.SendMessage(t, context.Background(), []string{localBroker}, topic, nil, msg)
 			got, err := io.ReadAll(out)
 			if err != nil {
 				t.Log("failed to read stdout:", err)

@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/handofgod94/kafkatail/kafkatest"
+	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -76,8 +78,13 @@ func TestKafkatailBase(t *testing.T) {
 	}
 
 	const topic = "kafkatail-test-base"
-	createTopic(t, context.Background(), topic)
-	defer deleteTopic(t, context.Background(), topic)
+	topicConfig := kafka.TopicConfig{
+		Topic:             topic,
+		NumPartitions:     2,
+		ReplicationFactor: 1,
+	}
+	kafkatest.CreateTopicWithConfig(t, context.Background(), topicConfig)
+	defer kafkatest.DeleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -95,7 +102,7 @@ func TestKafkatailBase(t *testing.T) {
 				t.FailNow()
 			}
 
-			sendMessage(t, context.Background(), localBroker, topic, []byte(tc.msg))
+			kafkatest.SendMessage(t, context.Background(), []string{localBroker}, topic, nil, []byte(tc.msg))
 			got, err := io.ReadAll(out)
 			if err != nil {
 				t.Log("failed to read output:", err)
