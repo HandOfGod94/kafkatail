@@ -177,28 +177,13 @@ func TestTailForMultipleParitions(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			appName, args := appNameAndArgs(tc.cmd)
-			cmd := exec.CommandContext(ctx, appName, args...)
-			out, err := getOutput(cmd, tc.wantErr)
-			if err != nil {
-				t.Log("failed to create output pipe:", err)
-				t.FailNow()
-			}
-
-			if err := cmd.Start(); err != nil {
-				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
-				t.FailNow()
-			}
+			cmd := command{t: t, Cmd: tc.cmd, WantErr: tc.wantErr}
+			cmd.execute(ctx)
 
 			kafkatest.SendMultipleMessagesToParition(t, context.Background(), []string{localBroker}, topic, tc.messages)
-			got, err := io.ReadAll(out)
-			if err != nil {
-				t.Log("failed to read output:", err)
-				t.FailNow()
-			}
 
+			got := cmd.getOutput()
 			actual := sanitizeString(string(got))
-			cmd.Wait()
 
 			for _, wt := range tc.wantMessages {
 				assert.Contains(t, actual, sanitizeString(wt))
