@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/handofgod94/kafkatail/consumer"
@@ -175,25 +174,14 @@ func TestConsumeWithMultipleParitions(t *testing.T) {
 			c := tc.opts.New(tc.bootstrapServers, tc.topic)
 			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder())
 
-			for partition, msg := range tc.messages {
-				kafkatest.SendMessageToPartition(t, ctx, tc.bootstrapServers, tc.topic, partition, nil, []byte(msg))
-			}
+			kafkatest.SendMultipleMessagesToParition(t, ctx, tc.bootstrapServers, tc.topic, tc.messages)
 
-			var got strings.Builder
-			loop := true
-			for loop {
-				select {
-				case msg := <-outChan:
-					got.WriteString(msg)
-				case <-tb.Dead():
-					loop = false
-				}
-			}
+			got := kafkatest.ReadChanMessages(tb, outChan)
 
 			for _, wt := range tc.want {
-				assert.Contains(t, got.String(), wt.parition)
-				assert.Contains(t, got.String(), wt.offset)
-				assert.Contains(t, got.String(), wt.message)
+				assert.Contains(t, got, wt.parition)
+				assert.Contains(t, got, wt.offset)
+				assert.Contains(t, got, wt.message)
 			}
 		})
 	}

@@ -2,10 +2,12 @@ package kafkatest
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/segmentio/kafka-go"
+	"gopkg.in/tomb.v2"
 )
 
 var DefaultTimeout = 10 * time.Second
@@ -33,6 +35,12 @@ func SendMessage(t *testing.T, ctx context.Context, brokers []string, topic stri
 	if err := w.Close(); err != nil {
 		t.Log("failed to close writer:", err)
 		t.FailNow()
+	}
+}
+
+func SendMultipleMessagesToParition(t *testing.T, ctx context.Context, brokers []string, topic string, msgs map[int]string) {
+	for partition, msg := range msgs {
+		SendMessageToPartition(t, ctx, brokers, topic, partition, nil, []byte(msg))
 	}
 }
 
@@ -84,4 +92,19 @@ func DeleteTopic(t *testing.T, ctx context.Context, topic string) {
 		t.Logf("failed to create topic. errors: %+v", resp.Errors)
 		t.FailNow()
 	}
+}
+
+func ReadChanMessages(tb *tomb.Tomb, c <-chan string) string {
+	var got strings.Builder
+
+	loop := true
+	for loop {
+		select {
+		case msg := <-c:
+			got.WriteString(msg)
+		case <-tb.Dead():
+			loop = false
+		}
+	}
+	return got.String()
 }

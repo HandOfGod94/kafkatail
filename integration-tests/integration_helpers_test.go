@@ -31,3 +31,11 @@ func streamToRead(wantErr bool, stdout, stderr io.ReadCloser) io.ReadCloser {
 	}
 	return stdout
 }
+
+func sanitizeString(str string) string {
+	sanitizeString := strings.TrimSpace(str)
+	sanitizeString = strings.ReplaceAll(sanitizeString, " ", "")
+	sanitizeString = strings.ReplaceAll(sanitizeString, "\t", "")
+	sanitizeString = strings.ReplaceAll(sanitizeString, "\n", "")
+	return sanitizeString
+}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"io"
 	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
@@ -71,7 +72,7 @@ func TestKafkatailBase(t *testing.T) {
 		},
 		{
 			desc: "with spaces instead of `=` in command",
-			cmd:  "kafkatail -b localhost:9093 --offset=-2 --group_id foo_id kafkatail-test-base",
+			cmd:  "kafkatail -b localhost:9093 --offset=-2 kafkatail-test-base",
 			msg:  "hello world",
 			want: "hello world",
 		},
@@ -112,6 +113,97 @@ func TestKafkatailBase(t *testing.T) {
 			assert.Contains(t, string(got), tc.want)
 
 			cmd.Wait()
+		})
+	}
+}
+
+func TestTailForMultipleParitions(t *testing.T) {
+	topic := "kafka-consume-gorup-id-int-test"
+	topicConfig := kafka.TopicConfig{
+		Topic:             topic,
+		NumPartitions:     2,
+		ReplicationFactor: 1,
+	}
+	kafkatest.CreateTopicWithConfig(t, context.Background(), topicConfig)
+	defer kafkatest.DeleteTopic(t, context.Background(), topic)
+
+	testCases := []struct {
+		desc         string
+		cmd          string
+		messages     map[int]string
+		wantMessages []string
+		noWanted     int
+		wantErr      bool
+	}{
+		{
+			desc: "tail with group_id flag",
+			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafka-consume-gorup-id-int-test",
+			messages: map[int]string{
+				0: "hello",
+				1: "world",
+			},
+			noWanted: 2,
+			wantMessages: []string{
+				`
+				====================Message====================
+				============Partition: 0, Offset: 0==========
+				hello
+				`,
+				`
+				====================Message====================
+				============Partition: 1, Offset: 0==========
+				world
+				`,
+			},
+		},
+		{
+			desc: "tail withput group_id flag",
+			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --offset=-1 kafka-consume-gorup-id-int-test",
+			messages: map[int]string{
+				0: "hello",
+				1: "world",
+			},
+			noWanted: 1,
+			wantMessages: []string{
+				`
+				====================Message====================
+				============Partition: 0, Offset: 0==========
+				hello
+				`,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			appName, args := appNameAndArgs(tc.cmd)
+			cmd := exec.CommandContext(ctx, appName, args...)
+			out, err := getOutput(cmd, tc.wantErr)
+			if err != nil {
+				t.Log("failed to create output pipe:", err)
+				t.FailNow()
+			}
+
+			if err := cmd.Start(); err != nil {
+				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
+				t.FailNow()
+			}
+
+			kafkatest.SendMultipleMessagesToParition(t, context.Background(), []string{localBroker}, topic, tc.messages)
+			got, err := io.ReadAll(out)
+			if err != nil {
+				t.Log("failed to read output:", err)
+				t.FailNow()
+			}
+
+			actual := sanitizeString(string(got))
+			cmd.Wait()
+
+			for _, wt := range tc.wantMessages {
+				assert.Contains(t, actual, sanitizeString(wt))
+			}
+			assert.Equal(t, tc.noWanted, strings.Count(actual, "Message"))
 		})
 	}
 }
