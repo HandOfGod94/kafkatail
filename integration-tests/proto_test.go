@@ -4,8 +4,6 @@ package kafkatail_test
 
 import (
 	"context"
-	"io"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -52,36 +50,19 @@ func TestKafkatalProto(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			appName, args := appNameAndArgs(tc.cmd)
-			cmd := exec.CommandContext(ctx, appName, args...)
-			out, err := getOutput(cmd, tc.wantErr)
-			if err != nil {
-				t.Log("failed to create output pipe:", err)
-				t.FailNow()
-			}
-
-			err = cmd.Start()
-			if err != nil {
-				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
-				t.FailNow()
-			}
-
 			msg, err := proto.Marshal(&starwarsHuman)
 			if err != nil {
 				t.Log("failed to marshal message:", err)
 				t.FailNow()
 			}
 
+			cmd := command{t: t, Cmd: tc.cmd, WantErr: tc.wantErr}
+			cmd.execute(ctx)
+
 			kafkatest.SendMessage(t, context.Background(), []string{localBroker}, topic, nil, msg)
-			got, err := io.ReadAll(out)
-			if err != nil {
-				t.Log("failed to read stdout:", err)
-				t.FailNow()
-			}
 
-			assert.Contains(t, string(got), tc.want)
-
-			cmd.Wait()
+			got := cmd.getOutput()
+			assert.Contains(t, got, tc.want)
 		})
 	}
 }

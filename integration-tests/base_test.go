@@ -4,8 +4,6 @@ package kafkatail_test
 
 import (
 	"context"
-	"io"
-	"os/exec"
 	"strings"
 	"testing"
 	"time"
@@ -90,29 +88,13 @@ func TestKafkatailBase(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			appName, args := appNameAndArgs(tc.cmd)
-			cmd := exec.CommandContext(ctx, appName, args...)
-			out, err := getOutput(cmd, tc.wantErr)
-			if err != nil {
-				t.Log("failed to create output pipe:", err)
-				t.FailNow()
-			}
-
-			if err := cmd.Start(); err != nil {
-				t.Logf("failed to start command: '%v'. error: %v", tc.cmd, err)
-				t.FailNow()
-			}
+			cmd := command{t: t, Cmd: tc.cmd, WantErr: tc.wantErr}
+			cmd.execute(ctx)
 
 			kafkatest.SendMessage(t, context.Background(), []string{localBroker}, topic, nil, []byte(tc.msg))
-			got, err := io.ReadAll(out)
-			if err != nil {
-				t.Log("failed to read output:", err)
-				t.FailNow()
-			}
+			got := cmd.getOutput()
 
-			assert.Contains(t, string(got), tc.want)
-
-			cmd.Wait()
+			assert.Contains(t, got, tc.want)
 		})
 	}
 }
