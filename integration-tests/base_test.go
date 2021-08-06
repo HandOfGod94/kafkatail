@@ -114,7 +114,6 @@ func TestTailForMultipleParitions(t *testing.T) {
 		cmd          string
 		messages     map[int]string
 		wantMessages []string
-		noWanted     int
 		wantErr      bool
 	}{
 		{
@@ -124,7 +123,6 @@ func TestTailForMultipleParitions(t *testing.T) {
 				0: "hello",
 				1: "world",
 			},
-			noWanted: 2,
 			wantMessages: []string{
 				`
 				====================Message====================
@@ -145,7 +143,6 @@ func TestTailForMultipleParitions(t *testing.T) {
 				0: "hello",
 				1: "world",
 			},
-			noWanted: 1,
 			wantMessages: []string{
 				`
 				====================Message====================
@@ -170,7 +167,7 @@ func TestTailForMultipleParitions(t *testing.T) {
 			for _, wt := range tc.wantMessages {
 				assert.Contains(t, actual, sanitizeString(wt))
 			}
-			assert.Equal(t, tc.noWanted, strings.Count(actual, "Message"))
+			assert.Equal(t, len(tc.wantMessages), strings.Count(actual, "Message"))
 		})
 	}
 }
