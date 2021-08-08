@@ -93,8 +93,8 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		log.Printf("stopping application")
 		kr.Close()
+		log.Printf("stopping application, with exitcode: %d", exitCode)
 		os.Exit(exitCode)
 
 		return nil
