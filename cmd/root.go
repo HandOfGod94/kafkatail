@@ -28,7 +28,7 @@ var (
 	fromDateTime     string
 )
 
-const appVersion = "dev"
+const appVersion = "0.1.2"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
