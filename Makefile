@@ -22,10 +22,10 @@ clean-integration:
 .PHONY: integration-tests
 integration-tests:
 	go install
-	go test -p 1 -count=1 -timeout 60s -tags=integration ./integration-tests
+	go test -p 1 -count=1 -timeout 90s -tags=integration ./integration-tests
 
 test:
-	go test -timeout 30s -cover -count=1 -coverprofile=coverage.out ./...
+	go test -timeout 60s -cover -count=1 -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 
 tidy:

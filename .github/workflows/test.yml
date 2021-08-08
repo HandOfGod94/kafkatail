@@ -48,9 +48,9 @@ jobs:
         staticcheck ./...
 
     - name: Test
-      run: 	go test -timeout 30s -count=1 -race ./...
+      run: 	go test -timeout 60s -count=1 -race ./...
 
     - name: Run Integration Tests
       run: |
         go install
-        go test -p 1 -count=1 -timeout 60s -tags=integration ./integration-tests
+        go test -p 1 -count=1 -timeout 90s -tags=integration ./integration-tests
