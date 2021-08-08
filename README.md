@@ -83,6 +83,9 @@ kafkatail --bootstrap_servers=localhost:9093 --from_datetime=2021-06-28T15:04:23
 
 # tail messages from specific partition. Default: 0
 kafkatail --bootstrap_servers=localhost:9093 --partition=5 kafkatail-test-base
+
+# tail from multiple partitions, using group_id
+kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafka-consume-gorup-id-int-test
 ```
 
 ### Known Limitation
