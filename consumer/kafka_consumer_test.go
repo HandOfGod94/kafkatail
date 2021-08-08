@@ -72,7 +72,8 @@ func TestConsumeSuccses(t *testing.T) {
 			tb, tctx := tomb.WithContext(ctx)
 
 			c := consumer.New(tc.fields.bootstrapServers, tc.fields.topic)
-			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder())
+			kr, _ := c.InitReader(ctx)
+			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder(), kr)
 
 			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("hello"))
 			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("world"))
@@ -114,11 +115,13 @@ func TestConsume_Errors(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			c := consumer.New(tc.bootstrapServers, tc.topic)
 			ctx, cancel := context.WithTimeout(context.Background(), kafkatest.DefaultTimeout)
 			defer cancel()
+
+			c := consumer.New(tc.bootstrapServers, tc.topic)
+			kr, _ := c.InitReader(ctx)
 			tb, tctx := tomb.WithContext(ctx)
-			_ = c.Consume(tctx, tb, wire.NewPlaintextDecoder())
+			_ = c.Consume(tctx, tb, wire.NewPlaintextDecoder(), kr)
 
 			<-tb.Dead()
 			assert.Contains(t, tb.Err().Error(), tc.expectedErr)
@@ -172,7 +175,8 @@ func TestConsumeWithMultipleParitions(t *testing.T) {
 
 			tb, tctx := tomb.WithContext(ctx)
 			c := tc.opts.New(tc.bootstrapServers, tc.topic)
-			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder())
+			kr, _ := c.InitReader(ctx)
+			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder(), kr)
 
 			kafkatest.SendMultipleMessagesToParition(t, ctx, tc.bootstrapServers, tc.topic, tc.messages)
 

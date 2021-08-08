@@ -44,12 +44,7 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 	}
 }
 
-func (kc *kafkaConsumer) Consume(ctx context.Context, tb *tomb.Tomb, decoder wire.Decoder) <-chan Message {
-	r, err := kc.initReader(ctx)
-	if err != nil {
-		log.Fatal("failed to initialize kafka consumer:", err)
-	}
-
+func (kc *kafkaConsumer) Consume(ctx context.Context, tb *tomb.Tomb, decoder wire.Decoder, r *kafka.Reader) <-chan Message {
 	outChan := make(chan string)
 
 	tb.Go(func() error {
@@ -77,7 +72,7 @@ func (kc *kafkaConsumer) Consume(ctx context.Context, tb *tomb.Tomb, decoder wir
 
 }
 
-func (kc *kafkaConsumer) initReader(ctx context.Context) (*kafka.Reader, error) {
+func (kc *kafkaConsumer) InitReader(ctx context.Context) (*kafka.Reader, error) {
 	log.Printf("Starting consumer with config: %+v", kc)
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:   kc.bootstrapServers,
