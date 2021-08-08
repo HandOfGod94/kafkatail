@@ -136,21 +136,6 @@ func TestTailForMultipleParitions(t *testing.T) {
 				`,
 			},
 		},
-		{
-			desc: "tail withput group_id flag",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --offset=-1 kafka-consume-gorup-id-int-test",
-			messages: map[int]string{
-				0: "hello",
-				1: "world",
-			},
-			wantMessages: []string{
-				`
-				====================Message====================
-				============Partition: 0, Offset: 0==========
-				hello
-				`,
-			},
-		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {

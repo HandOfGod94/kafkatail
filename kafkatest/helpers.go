@@ -2,6 +2,7 @@ package kafkatest
 
 import (
 	"context"
+	"net"
 	"strings"
 	"testing"
 	"time"
@@ -45,19 +46,26 @@ func SendMultipleMessagesToParition(t *testing.T, ctx context.Context, brokers [
 }
 
 func SendMessageToPartition(t *testing.T, ctx context.Context, brokers []string, topic string, parition int, key, message []byte) {
-	record := kafka.Record{
-		Value: kafka.NewBytes(message),
-	}
-	produceReq := kafka.ProduceRequest{Topic: topic, Partition: parition, RequiredAcks: kafka.RequireOne, Records: kafka.NewRecordReader(record)}
-	resp, err := KafkaRawClient.Produce(ctx, &produceReq)
-
+	conn, err := net.Dial("tcp", brokers[0])
 	if err != nil {
-		t.Log("failed to send produce request to broker:", err)
+		t.Log("Failed to connect to kafka broker. %w", err)
 		t.FailNow()
 	}
+	connConfig := kafka.ConnConfig{
+		ClientID:  "kafkatail-test-client",
+		Topic:     topic,
+		Partition: parition,
+	}
 
-	if resp.Error != nil {
-		t.Log("failed to produce message: ", resp.Error)
+	kconn := kafka.NewConnWith(conn, connConfig)
+	msg := kafka.Message{
+		Key:   key,
+		Value: message,
+	}
+
+	_, err = kconn.WriteMessages(msg)
+	if err != nil {
+		t.Log("failed to send write message to broker:", err)
 		t.FailNow()
 	}
 }
