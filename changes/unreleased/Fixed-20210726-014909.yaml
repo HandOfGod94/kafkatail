@@ -1,3 +1,0 @@
-kind: Fixed
-body: consume from all partition when group_id is specified (#2)
-time: 2021-07-26T01:49:09.659415+05:30

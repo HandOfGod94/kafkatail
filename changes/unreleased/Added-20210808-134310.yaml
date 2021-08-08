@@ -1,3 +1,0 @@
-kind: Added
-body: close KafkaReader on app termination (#1)
-time: 2021-08-08T13:43:10.280603+05:30
