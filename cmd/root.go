@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
@@ -52,6 +55,8 @@ var rootCmd = &cobra.Command{
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		topic := args[0]
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 		parsedDT, err := time.Parse(time.RFC3339, fromDateTime)
 		if err != nil {
@@ -59,23 +64,40 @@ var rootCmd = &cobra.Command{
 		}
 
 		tb, ctx := tomb.WithContext(context.Background())
-
-		outChan := consumer.Options{
+		c := consumer.Options{
 			GroupID:      groupID,
 			Offset:       offset,
 			Partition:    partition,
 			FromDateTime: parsedDT,
-		}.New(bootstrapServers, topic).Consume(ctx, tb, decoderFactory(wireForamt))
+		}.New(bootstrapServers, topic)
+		kr, err := c.InitReader(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to initialize reader: %w", err)
+		}
 
-		for {
+		outChan := c.Consume(ctx, tb, decoderFactory(wireForamt), kr)
+
+		loop := true
+		exitCode := 0
+		for loop {
 			select {
 			case <-tb.Dead():
 				err := tb.Err()
-				log.Fatal("Stopping Application. error while consuming messages:", err)
+				log.Print("error while consuming messages:", err)
+				loop = false
+				exitCode = 1
 			case msg := <-outChan:
 				fmt.Println(msg)
+			case <-sigs:
+				loop = false
 			}
 		}
+
+		log.Printf("stopping application")
+		kr.Close()
+		os.Exit(exitCode)
+
+		return nil
 	},
 }
 
