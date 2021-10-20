@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/handofgod94/kafkatail/kafkatest"
+	. "github.com/handofgod94/kafkatail/kafkatest"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 )
@@ -40,17 +40,17 @@ func TestKafkatailPlaintext(t *testing.T) {
 		NumPartitions:     2,
 		ReplicationFactor: 1,
 	}
-	kafkatest.CreateTopicWithConfig(t, context.Background(), topicConfig)
-	defer kafkatest.DeleteTopic(t, context.Background(), topic)
+	CreateTopicWithConfig(t, context.Background(), topicConfig)
+	defer DeleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			cmd := command{t: t, Cmd: tc.cmd, WantErr: tc.wantErr}
-			cmd.execute(ctx)
+			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
+			cmd.Execute(ctx)
 
-			kafkatest.SendMessage(t, context.Background(), []string{localBroker}, topic, nil, []byte(tc.message))
-			got := cmd.getOutput()
+			SendMessage(t, context.Background(), []string{LocalBroker}, topic, nil, []byte(tc.message))
+			got := cmd.GetOutput()
 			assert.Contains(t, string(got), tc.want)
 		})
 	}

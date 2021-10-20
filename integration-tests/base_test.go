@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/handofgod94/kafkatail/kafkatest"
+	. "github.com/handofgod94/kafkatail/kafkatest"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 )
@@ -82,17 +82,17 @@ func TestKafkatailBase(t *testing.T) {
 		NumPartitions:     2,
 		ReplicationFactor: 1,
 	}
-	kafkatest.CreateTopicWithConfig(t, context.Background(), topicConfig)
-	defer kafkatest.DeleteTopic(t, context.Background(), topic)
+	CreateTopicWithConfig(t, context.Background(), topicConfig)
+	defer DeleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			cmd := command{t: t, Cmd: tc.cmd, WantErr: tc.wantErr}
-			cmd.execute(ctx)
+			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
+			cmd.Execute(ctx)
 
-			kafkatest.SendMessage(t, context.Background(), []string{localBroker}, topic, nil, []byte(tc.msg))
-			got := cmd.getOutput()
+			SendMessage(t, context.Background(), []string{LocalBroker}, topic, nil, []byte(tc.msg))
+			got := cmd.GetOutput()
 
 			assert.Contains(t, got, tc.want)
 		})
@@ -106,8 +106,8 @@ func TestTailForMultipleParitions(t *testing.T) {
 		NumPartitions:     2,
 		ReplicationFactor: 1,
 	}
-	kafkatest.CreateTopicWithConfig(t, context.Background(), topicConfig)
-	defer kafkatest.DeleteTopic(t, context.Background(), topic)
+	CreateTopicWithConfig(t, context.Background(), topicConfig)
+	defer DeleteTopic(t, context.Background(), topic)
 
 	testCases := []struct {
 		desc         string
@@ -141,16 +141,16 @@ func TestTailForMultipleParitions(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			cmd := command{t: t, Cmd: tc.cmd, WantErr: tc.wantErr}
-			cmd.execute(ctx)
+			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
+			cmd.Execute(ctx)
 
-			kafkatest.SendMultipleMessagesToParition(t, context.Background(), []string{localBroker}, topic, tc.messages)
+			SendMultipleMessagesToParition(t, context.Background(), []string{LocalBroker}, topic, tc.messages)
 
-			got := cmd.getOutput()
-			actual := sanitizeString(string(got))
+			got := cmd.GetOutput()
+			actual := SanitizeString(string(got))
 
 			for _, wt := range tc.wantMessages {
-				assert.Contains(t, actual, sanitizeString(wt))
+				assert.Contains(t, actual, SanitizeString(wt))
 			}
 			assert.Equal(t, len(tc.wantMessages), strings.Count(actual, "Message"))
 		})
