@@ -70,36 +70,28 @@ func SendMessageToPartition(t *testing.T, ctx context.Context, brokers []string,
 	}
 }
 
-func CreateTopicWithConfig(t *testing.T, ctx context.Context, topic kafka.TopicConfig) {
+func CreateTopicWithConfig(ctx context.Context, topic kafka.TopicConfig) error {
 	resp, err := KafkaRawClient.CreateTopics(ctx, &kafka.CreateTopicsRequest{
 		Topics: []kafka.TopicConfig{topic},
 	})
 
 	if err != nil {
-		t.Log("failed to create topic:", err)
-		t.FailNow()
+		return err
 	}
 
-	if resp.Errors[topic.Topic] != nil {
-		t.Logf("failed to create topic. errors: %+v", resp.Errors)
-		t.FailNow()
-	}
+	return resp.Errors[topic.Topic]
 }
 
-func DeleteTopic(t *testing.T, ctx context.Context, topic string) {
+func DeleteTopic(ctx context.Context, topic string) error {
 	resp, err := KafkaRawClient.DeleteTopics(ctx, &kafka.DeleteTopicsRequest{
 		Topics: []string{topic},
 	})
 
 	if err != nil {
-		t.Log("failed to delete topic:", err)
-		t.FailNow()
+		return err
 	}
 
-	if resp.Errors[topic] != nil {
-		t.Logf("failed to create topic. errors: %+v", resp.Errors)
-		t.FailNow()
-	}
+	return resp.Errors[topic]
 }
 
 func ReadChanMessages(tb *tomb.Tomb, c <-chan string) string {

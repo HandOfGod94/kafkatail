@@ -9,7 +9,6 @@ import (
 
 	. "github.com/handofgod94/kafkatail/kafkatest"
 	"github.com/handofgod94/kafkatail/testdata"
-	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
@@ -28,24 +27,16 @@ func TestKafkatalProto(t *testing.T) {
 	}{
 		{
 			desc: "prints decoded messages based on valid proto provided via args",
-			cmd:  `kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=starwars.proto --include_paths="../testdata" --message_type=Human kafkatail-test-proto`,
+			cmd:  `kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=starwars.proto --include_paths="../testdata" --message_type=Human kafkatail-proto-test-topic`,
 			want: "height:",
 		},
 		{
 			desc:    "prints decode error when it fails to decode",
-			cmd:     `kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=foo.proto --include_paths="../testdata" --message_type=Human kafkatail-test-proto`,
+			cmd:     `kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=foo.proto --include_paths="../testdata" --message_type=Human kafkatail-proto-test-topic`,
 			want:    "failed to decode message",
 			wantErr: true,
 		},
 	}
-	const topic = "kafkatail-test-proto"
-	topicConfig := kafka.TopicConfig{
-		Topic:             topic,
-		NumPartitions:     2,
-		ReplicationFactor: 1,
-	}
-	CreateTopicWithConfig(t, context.Background(), topicConfig)
-	defer DeleteTopic(t, context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -59,7 +50,7 @@ func TestKafkatalProto(t *testing.T) {
 			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
 			cmd.Execute(ctx)
 
-			SendMessage(t, context.Background(), []string{LocalBroker}, topic, nil, msg)
+			SendMessage(t, context.Background(), []string{LocalBroker}, kafkaProtoTopic, nil, msg)
 
 			got := cmd.GetOutput()
 			assert.Contains(t, got, tc.want)

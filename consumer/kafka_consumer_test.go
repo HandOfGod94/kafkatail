@@ -58,12 +58,8 @@ func TestConsumeSuccses(t *testing.T) {
 		},
 	}
 
-	kafkatest.CreateTopicWithConfig(t, context.Background(), kafka.TopicConfig{
-		Topic:             "kafkatail-test-topic",
-		NumPartitions:     2,
-		ReplicationFactor: 1,
-	})
-	defer kafkatest.DeleteTopic(t, context.Background(), "kafkatail-test-topic")
+	kafkatest.CreateTopicWithConfig(context.Background(), kafka.TopicConfig{Topic: "kafkatail-test-topic", NumPartitions: 2, ReplicationFactor: 1})
+	defer kafkatest.DeleteTopic(context.Background(), "kafkatail-test-topic")
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 
@@ -162,12 +158,8 @@ func TestConsumeWithMultipleParitions(t *testing.T) {
 		},
 	}
 
-	kafkatest.CreateTopicWithConfig(t, context.Background(), kafka.TopicConfig{
-		Topic:             topic,
-		NumPartitions:     2,
-		ReplicationFactor: 1,
-	})
-	defer kafkatest.DeleteTopic(t, context.Background(), topic)
+	kafkatest.CreateTopicWithConfig(context.Background(), kafka.TopicConfig{Topic: topic, NumPartitions: 2, ReplicationFactor: 1})
+	defer kafkatest.DeleteTopic(context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), kafkatest.DefaultTimeout)
