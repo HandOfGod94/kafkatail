@@ -34,7 +34,7 @@ func TestKafkatailBase(t *testing.T) {
 		{
 			desc:    "print error for invalid wire_format",
 			cmd:     "kafkatail --bootstrap_servers=1.1.1.1:9093 --wire_format=foo test",
-			want:    "must be 'avro', 'plaintext', 'proto'",
+			want:    "must be 'plaintext', 'proto'",
 			wantErr: true,
 		},
 		{

@@ -1,19 +1,11 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
-	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
-	"gopkg.in/tomb.v2"
 )
 
 var (
@@ -57,57 +49,14 @@ var rootCmd = &cobra.Command{
 	kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafka-consume-gorup-id-int-test
 	`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		wf := cmd.Flags().Lookup("wire_format").Value.String()
-		if wf == "proto" {
-			markFlagsRequired(cmd, []string{"proto_file", "include_paths", "message_type"})
+		formatFlag := cmd.Flags().Lookup("wire_format")
+		if formatFlag.Value.String() == "proto" {
+			cmd.MarkFlagRequired("proto_file")
+			cmd.MarkFlagRequired("include_paths")
+			cmd.MarkFlagRequired("message_type")
 		}
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		topic := args[0]
-		sigs := make(chan os.Signal, 1)
-		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-		parsedDT, err := time.Parse(time.RFC3339, fromDateTime)
-		if err != nil {
-			return fmt.Errorf("invalid datetime provided: %w", err)
-		}
-
-		tb, ctx := tomb.WithContext(context.Background())
-		c := consumer.Options{
-			GroupID:      groupID,
-			Offset:       offset,
-			Partition:    partition,
-			FromDateTime: parsedDT,
-		}.New(bootstrapServers, topic)
-		kr, err := c.InitReader(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to initialize reader: %w", err)
-		}
-
-		outChan := c.Consume(ctx, tb, decoderFactory(wireForamt), kr)
-
-		loop := true
-		exitCode := 0
-		for loop {
-			select {
-			case <-tb.Dead():
-				err := tb.Err()
-				log.Print("error while consuming messages:", err)
-				loop = false
-				exitCode = 1
-			case msg := <-outChan:
-				fmt.Println(msg)
-			case <-sigs:
-				loop = false
-			}
-		}
-
-		kr.Close()
-		log.Printf("stopping application, with exitcode: %d", exitCode)
-		os.Exit(exitCode)
-
-		return nil
-	},
+	RunE: runKafkaTail,
 }
 
 func Execute() {
@@ -133,21 +82,4 @@ func init() {
 	rootCmd.Flags().Lookup("wire_format").NoOptDefVal = "plaintext"
 
 	rootCmd.MarkFlagRequired("bootstrap_servers")
-}
-
-func decoderFactory(wireFormat wire.Format) wire.Decoder {
-	if wireFormat == wire.PlainText {
-		return wire.NewPlaintextDecoder()
-	} else if wireFormat == wire.Proto {
-		return wire.NewProtoDecoder(protoFile, messageType, includePaths)
-	} else {
-		log.Fatalf("unsupported message type. received: %v, supported: %v", messageType, "plaintext, proto")
-		return nil
-	}
-}
-
-func markFlagsRequired(cmd *cobra.Command, flags []string) {
-	for _, f := range flags {
-		cmd.MarkFlagRequired(f)
-	}
 }
