@@ -23,13 +23,13 @@ brews:
       owner: handofgod94
       name: homebrew-kafkatail
       branch: main
-      commit_author:
-        name: Gahan Rakholia
-        email: gahan94rakh@gmail.com
-      commit_msg_template: 'Brew formula update for {{ .ProjectName }} version {{ .Tag }}'
-      homepage: 'https://github.com/HandOfGod94/kafkatail'
-      description: 'tail kafka logs from any topic, any wire format on local console'
-      license: 'Apache-2.0'
+    commit_author:
+      name: Gahan Rakholia
+      email: gahan94rakh@gmail.com
+    commit_msg_template: 'Brew formula update for {{ .ProjectName }} version {{ .Tag }}'
+    homepage: 'https://github.com/HandOfGod94/kafkatail'
+    description: 'tail kafka logs from any topic, any wire format on local console'
+    license: 'Apache-2.0'
 changelog:
   sort: asc
   filters:
