@@ -22,19 +22,28 @@ CLI app to tail kafka logs on console from any topic having messages in any form
 
 Feel free to use any of the available methods
 
-* Download executable binaries from [Release](https://github.com/HandOfGod94/kafkatail/releases) page
-* Install via `go` toolchain
+* **Install via Homebrew**
+```sh
+brew install handofgod94/tap/kafkatail
+```
+
+_OR_
+
+* **Install via `go` toolchain**
   + For Go 1.16 or higher
     ```sh
-    go install github.com/handofgod94/kafkatail@v0.1.2
+    go install github.com/handofgod94/kafkatail@v0.1.3
     ```
 
   + For go version <= 1.15
     ```sh
-    GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.2
+    GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.3
     ```
     The go binary will be installed in `$GOPATH/bin`
 
+_OR_
+
+* **Download executable binaries from [Release](https://github.com/HandOfGod94/kafkatail/releases) page**
 > Soon will be available via package managers
 
 ### QuickStart
