@@ -2,9 +2,8 @@ name: release
 
 on: workflow_dispatch
 
-permissions:
-  actions: read|write
-  contents: read|write
+env:
+  HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
 
 jobs:
   goreleaser:
