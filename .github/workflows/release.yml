@@ -2,9 +2,6 @@ name: release
 
 on: workflow_dispatch
 
-env:
-  HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
-
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
