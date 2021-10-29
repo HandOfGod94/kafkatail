@@ -99,8 +99,8 @@ kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafka-consume-goru
 
 ### Known Limitation
 
-* No/Limited support for consuming from multiple partitions at same time:
-  When you don't specific `--partition` arg while starting `kafkatail`, it defaults to `partition 0`.  
+* No/Limited support for consuming from multiple partitions at same time:  
+  When you don't specify `--partition` opt while starting `kafkatail`, it defaults to `partition 0`.  
   Although if you specify `--group_id`, it will tail from all the partition but there are caveats:
   * you will have an extra consumer group entry on kafka topic
   * `--offset` option doesn't work with `--gorup_id`
