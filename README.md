@@ -41,7 +41,7 @@ Feel free to use any of the available methods
 
 `$ kafkatail --version`
 ```
-kafkatail version 0.1.2
+kafkatail version 0.1.3
 ```
 
 ### Usage

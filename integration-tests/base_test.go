@@ -23,7 +23,7 @@ func TestKafkatailBase(t *testing.T) {
 		{
 			desc: "check version",
 			cmd:  "kafkatail --version",
-			want: "0.1.2",
+			want: "0.1.3",
 		},
 		{
 			desc:    "print error for missing required args",
