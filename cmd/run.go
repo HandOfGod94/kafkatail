@@ -38,7 +38,16 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 	}
 
 	outChan := c.Consume(ctx, tb, decoderFactory(wireForamt), kr)
+	exitCode := receiveMessages(tb, outChan, sigs)
 
+	kr.Close()
+	log.Printf("stopping application, with exitcode: %d", exitCode)
+	os.Exit(exitCode)
+
+	return nil
+}
+
+func receiveMessages(tb *tomb.Tomb, outChan <-chan string, sigs chan os.Signal) int {
 	loop := true
 	exitCode := 0
 	for loop {
@@ -54,12 +63,7 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 			loop = false
 		}
 	}
-
-	kr.Close()
-	log.Printf("stopping application, with exitcode: %d", exitCode)
-	os.Exit(exitCode)
-
-	return nil
+	return exitCode
 }
 
 func decoderFactory(wireFormat wire.Format) wire.Decoder {
