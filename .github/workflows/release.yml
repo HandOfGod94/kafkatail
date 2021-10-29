@@ -2,7 +2,9 @@ name: release
 
 on: workflow_dispatch
 
-permissions: read-all|write-all
+permissions:
+  actions: read|write
+  contents: read|write
 
 jobs:
   goreleaser:
