@@ -21,7 +21,7 @@ brews:
   - name: kafkatail
     tap:
       owner: handofgod94
-      name: homebrew-kafkatail
+      name: homebrew-tap
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     skip_upload: auto
