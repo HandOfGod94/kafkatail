@@ -17,9 +17,6 @@ import (
 
 func runKafkaTail(cmd *cobra.Command, args []string) error {
 	topic := args[0]
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
 	parsedDT, err := time.Parse(time.RFC3339, fromDateTime)
 	if err != nil {
 		return fmt.Errorf("invalid datetime provided: %w", err)
@@ -32,13 +29,14 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 		Partition:    partition,
 		FromDateTime: parsedDT,
 	}.New(bootstrapServers, topic)
+
 	kr, err := c.InitReader(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize reader: %w", err)
 	}
 
 	outChan := c.Consume(ctx, tb, decoderFactory(wireForamt), kr)
-	exitCode := receiveMessages(tb, outChan, sigs)
+	exitCode := receiveMessages(tb, outChan)
 
 	kr.Close()
 	log.Printf("stopping application, with exitcode: %d", exitCode)
@@ -47,7 +45,9 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func receiveMessages(tb *tomb.Tomb, outChan <-chan string, sigs chan os.Signal) int {
+func receiveMessages(tb *tomb.Tomb, outChan <-chan string) int {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	loop := true
 	exitCode := 0
 	for loop {
@@ -67,11 +67,12 @@ func receiveMessages(tb *tomb.Tomb, outChan <-chan string, sigs chan os.Signal) 
 }
 
 func decoderFactory(wireFormat wire.Format) wire.Decoder {
-	if wireFormat == wire.PlainText {
+	switch wireFormat {
+	case wire.PlainText:
 		return wire.NewPlaintextDecoder()
-	} else if wireFormat == wire.Proto {
+	case wire.Proto:
 		return wire.NewProtoDecoder(protoFile, messageType, includePaths)
-	} else {
+	default:
 		log.Fatalf("unsupported message type. received: %v, supported: %v", messageType, "plaintext, proto")
 		return nil
 	}
