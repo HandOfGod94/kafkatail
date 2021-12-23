@@ -1,17 +1,17 @@
 package consumer_test
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/kafkatest"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/tomb.v2"
 )
 
 func TestConsumeSuccses(t *testing.T) {
@@ -65,24 +65,16 @@ func TestConsumeSuccses(t *testing.T) {
 
 			ctx, cancel := context.WithTimeout(context.Background(), kafkatest.DefaultTimeout)
 			defer cancel()
-			tb, tctx := tomb.WithContext(ctx)
 
 			c := consumer.New(tc.fields.bootstrapServers, tc.fields.topic)
 			kr, _ := c.InitReader(ctx)
-			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder(), kr)
+			outChan := c.Consume(ctx, wire.NewPlaintextDecoder(), kr)
 
 			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("hello"))
 			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("world"))
 
-			got := bytes.NewBufferString("")
-			select {
-			case msg := <-outChan:
-				fmt.Fprint(got, msg)
-			case <-ctx.Done():
-				// no op
-			}
-
-			assert.Contains(t, got.String(), tc.want)
+			got := kafkatest.ReadChanMessages(ctx, outChan)
+			assert.Contains(t, got[0].Message, tc.want)
 		})
 	}
 }
@@ -116,11 +108,11 @@ func TestConsume_Errors(t *testing.T) {
 
 			c := consumer.New(tc.bootstrapServers, tc.topic)
 			kr, _ := c.InitReader(ctx)
-			tb, tctx := tomb.WithContext(ctx)
-			_ = c.Consume(tctx, tb, wire.NewPlaintextDecoder(), kr)
+			outChan := c.Consume(ctx, wire.NewPlaintextDecoder(), kr)
 
-			<-tb.Dead()
-			assert.Contains(t, tb.Err().Error(), tc.expectedErr)
+			got := kafkatest.ReadChanMessages(ctx, outChan)
+
+			assert.Contains(t, got[0].Err.Error(), tc.expectedErr)
 		})
 	}
 }
@@ -162,22 +154,27 @@ func TestConsumeWithMultipleParitions(t *testing.T) {
 	defer kafkatest.DeleteTopic(context.Background(), topic)
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), kafkatest.DefaultTimeout)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 
-			tb, tctx := tomb.WithContext(ctx)
 			c := tc.opts.New(tc.bootstrapServers, tc.topic)
 			kr, _ := c.InitReader(ctx)
-			outChan := c.Consume(tctx, tb, wire.NewPlaintextDecoder(), kr)
+			outChan := c.Consume(ctx, wire.NewPlaintextDecoder(), kr)
 
-			kafkatest.SendMultipleMessagesToParition(t, ctx, tc.bootstrapServers, tc.topic, tc.messages)
+			kafkatest.SendMultipleMessagesToParition(t, tc.bootstrapServers, tc.topic, tc.messages)
 
-			got := kafkatest.ReadChanMessages(tb, outChan)
+			results := kafkatest.ReadChanMessages(ctx, outChan)
+			fmt.Printf("output: %+v\n", results)
+
+			var got strings.Builder
+			for _, res := range results[:len(results)-1] {
+				got.WriteString(res.Message)
+			}
 
 			for _, wt := range tc.want {
-				assert.Contains(t, got, wt.parition)
-				assert.Contains(t, got, wt.offset)
-				assert.Contains(t, got, wt.message)
+				assert.Contains(t, got.String(), wt.parition)
+				assert.Contains(t, got.String(), wt.offset)
+				assert.Contains(t, got.String(), wt.message)
 			}
 		})
 	}

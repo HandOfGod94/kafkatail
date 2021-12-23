@@ -126,7 +126,7 @@ func TestTailForMultipleParitions(t *testing.T) {
 			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
 			cmd.Execute(ctx)
 
-			SendMultipleMessagesToParition(t, context.Background(), []string{LocalBroker}, kafkaTestTopicWithPartition, tc.messages)
+			SendMultipleMessagesToParition(t, []string{LocalBroker}, kafkaTestTopicWithPartition, tc.messages)
 
 			got := cmd.GetOutput()
 			actual := SanitizeString(string(got))

@@ -9,10 +9,7 @@ import (
 
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
-	"gopkg.in/tomb.v2"
 )
-
-type Message = string
 
 type kafkaConsumer struct {
 	bootstrapServers []string
@@ -44,29 +41,30 @@ func New(bootstrapServers []string, topic string) *kafkaConsumer {
 	}
 }
 
-func (kc *kafkaConsumer) Consume(ctx context.Context, tb *tomb.Tomb, decoder wire.Decoder, r *kafka.Reader) <-chan Message {
-	outChan := make(chan string)
+func (kc *kafkaConsumer) Consume(ctx context.Context, decoder wire.Decoder, r *kafka.Reader) <-chan Result {
+	outChan := make(chan Result)
 
-	tb.Go(func() error {
+	go func(ctx context.Context) {
 		for {
 			m, err := r.ReadMessage(ctx)
 			if err != nil {
-				// TODO: return custom wrapped error with contextual info
-				return err
+				outChan <- Result{Err: err}
+				return
 			}
 
 			value, err := decoder.Decode(m.Value)
 			if err != nil {
 				log.Printf("failed to decode message. error: %v", err)
-				return err
+				outChan <- Result{Err: err}
+				return
 			}
 			msg := bytes.NewBufferString("")
 			fmt.Fprintln(msg, "====================Message====================")
 			fmt.Fprintf(msg, "============Partition: %v, Offset: %v==========\n", m.Partition, m.Offset)
 			fmt.Fprintln(msg, value)
-			outChan <- msg.String()
+			outChan <- Result{Message: msg.String()}
 		}
-	})
+	}(ctx)
 
 	return outChan
 

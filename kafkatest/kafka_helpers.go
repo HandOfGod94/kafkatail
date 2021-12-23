@@ -3,15 +3,14 @@ package kafkatest
 import (
 	"context"
 	"net"
-	"strings"
 	"testing"
 	"time"
 
+	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/segmentio/kafka-go"
-	"gopkg.in/tomb.v2"
 )
 
-var DefaultTimeout = 10 * time.Second
+var DefaultTimeout = 3 * time.Second
 
 var KafkaRawClient = kafka.Client{
 	Addr:      kafka.TCP("localhost:9093"),
@@ -39,13 +38,13 @@ func SendMessage(t *testing.T, ctx context.Context, brokers []string, topic stri
 	}
 }
 
-func SendMultipleMessagesToParition(t *testing.T, ctx context.Context, brokers []string, topic string, msgs map[int]string) {
+func SendMultipleMessagesToParition(t *testing.T, brokers []string, topic string, msgs map[int]string) {
 	for partition, msg := range msgs {
-		SendMessageToPartition(t, ctx, brokers, topic, partition, nil, []byte(msg))
+		SendMessageToPartition(t, brokers, topic, partition, nil, []byte(msg))
 	}
 }
 
-func SendMessageToPartition(t *testing.T, ctx context.Context, brokers []string, topic string, parition int, key, message []byte) {
+func SendMessageToPartition(t *testing.T, brokers []string, topic string, parition int, key, message []byte) {
 	conn, err := net.Dial("tcp", brokers[0])
 	if err != nil {
 		t.Log("Failed to connect to kafka broker. %w", err)
@@ -94,17 +93,19 @@ func DeleteTopic(ctx context.Context, topic string) error {
 	return resp.Errors[topic]
 }
 
-func ReadChanMessages(tb *tomb.Tomb, c <-chan string) string {
-	var got strings.Builder
+func ReadChanMessages(ctx context.Context, c <-chan consumer.Result) []consumer.Result {
+	got := make([]consumer.Result, 0)
 
 	loop := true
 	for loop {
 		select {
-		case msg := <-c:
-			got.WriteString(msg)
-		case <-tb.Dead():
+		case <-ctx.Done():
 			loop = false
+			got = append(got, consumer.Result{Err: ctx.Err()})
+		case msg := <-c:
+			got = append(got, msg)
 		}
 	}
-	return got.String()
+
+	return got
 }
