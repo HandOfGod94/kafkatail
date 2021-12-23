@@ -12,7 +12,6 @@ import (
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
-	"gopkg.in/tomb.v2"
 )
 
 func runKafkaTail(cmd *cobra.Command, args []string) error {
@@ -22,7 +21,6 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid datetime provided: %w", err)
 	}
 
-	tb, ctx := tomb.WithContext(context.Background())
 	c := consumer.Options{
 		GroupID:      groupID,
 		Offset:       offset,
@@ -30,13 +28,13 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 		FromDateTime: parsedDT,
 	}.New(bootstrapServers, topic)
 
-	kr, err := c.InitReader(ctx)
+	kr, err := c.InitReader(context.Background())
 	if err != nil {
 		return fmt.Errorf("failed to initialize reader: %w", err)
 	}
 
-	outChan := c.Consume(ctx, tb, decoderFactory(wireForamt), kr)
-	exitCode := receiveMessages(tb, outChan)
+	outChan := c.Consume(context.Background(), decoderFactory(wireForamt), kr)
+	exitCode := receiveMessages(outChan)
 
 	kr.Close()
 	log.Printf("stopping application, with exitcode: %d", exitCode)
@@ -45,20 +43,20 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func receiveMessages(tb *tomb.Tomb, outChan <-chan string) int {
+func receiveMessages(outChan <-chan consumer.Result) int {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	loop := true
 	exitCode := 0
 	for loop {
 		select {
-		case <-tb.Dead():
-			err := tb.Err()
-			log.Print("error while consuming messages:", err)
-			loop = false
-			exitCode = 1
-		case msg := <-outChan:
-			fmt.Println(msg)
+		case result := <-outChan:
+			if result.Err != nil {
+				log.Print("error while consuming messages:", result.Err)
+				loop = false
+				exitCode = 1
+			}
+			fmt.Println(result.Message)
 		case <-sigs:
 			loop = false
 		}
