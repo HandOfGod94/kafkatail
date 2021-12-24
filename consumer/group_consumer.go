@@ -53,3 +53,8 @@ func (gc *groupConsumer) Consume(ctx context.Context, decoder wire.Decoder) <-ch
 
 	return resultChan
 }
+
+func (gc *groupConsumer) Close() error {
+	log.Println("closing group consumer")
+	return gc.reader.Close()
+}

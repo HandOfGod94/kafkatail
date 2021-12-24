@@ -2,9 +2,7 @@ package consumer_test
 
 import (
 	"context"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/kafkatest"
@@ -112,67 +110,6 @@ func TestConsume_Errors(t *testing.T) {
 			got := kafkatest.ReadChanMessages(ctx, outChan)
 
 			assert.Contains(t, got[0].Err.Error(), tc.expectedErr)
-		})
-	}
-}
-
-func TestConsumeWithMultipleParitions(t *testing.T) {
-	type wantFields struct {
-		parition string
-		offset   string
-		message  string
-	}
-	topic := "kafka-consume-gorup-id-test"
-
-	testCases := []struct {
-		desc             string
-		opts             consumer.Options
-		bootstrapServers []string
-		topic            string
-		messages         map[partition]string
-		want             []wantFields
-	}{
-		{
-			desc: "with group id options",
-			opts: consumer.Options{GroupID: "foo-test-id"},
-			messages: map[partition]string{
-				0: "foo",
-				1: "bar",
-			},
-			bootstrapServers: []string{"localhost:9093"},
-			topic:            topic,
-			want: []wantFields{
-				{"Partition: 0", "Offset: 0", "foo"},
-				{"Partition: 1", "Offset: 0", "bar"},
-			},
-		},
-	}
-
-	kafkatest.CreateTopicWithConfig(context.Background(), kafka.TopicConfig{Topic: topic, NumPartitions: 2, ReplicationFactor: 1})
-	defer kafkatest.DeleteTopic(context.Background(), topic)
-	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			c := tc.opts.New(tc.bootstrapServers, tc.topic)
-			kr, _ := c.InitReader(ctx)
-			outChan := c.Consume(ctx, wire.NewPlaintextDecoder(), kr)
-
-			kafkatest.SendMultipleMessagesToParition(t, tc.bootstrapServers, tc.topic, tc.messages)
-
-			results := kafkatest.ReadChanMessages(ctx, outChan)
-
-			var got strings.Builder
-			for _, res := range results[:len(results)-1] {
-				got.WriteString(res.Message)
-			}
-
-			for _, wt := range tc.want {
-				assert.Contains(t, got.String(), wt.parition)
-				assert.Contains(t, got.String(), wt.offset)
-				assert.Contains(t, got.String(), wt.message)
-			}
 		})
 	}
 }

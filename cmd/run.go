@@ -21,22 +21,35 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid datetime provided: %w", err)
 	}
 
-	c := consumer.Options{
-		GroupID:      groupID,
-		Offset:       offset,
-		Partition:    partition,
-		FromDateTime: parsedDT,
-	}.New(bootstrapServers, topic)
+	var resultChan <-chan consumer.Result
+	var exitCode int
 
-	kr, err := c.InitReader(context.Background())
-	if err != nil {
-		return fmt.Errorf("failed to initialize reader: %w", err)
+	if groupID != "" {
+		gc, err := consumer.NewGroupConsumer(bootstrapServers, topic, groupID)
+		if err != nil {
+			return err
+		}
+		resultChan = gc.Consume(context.Background(), decoderFactory(wireForamt))
+		exitCode = receiveMessages(resultChan)
+		gc.Close()
+	} else {
+		c := consumer.Options{
+			GroupID:      groupID,
+			Offset:       offset,
+			Partition:    partition,
+			FromDateTime: parsedDT,
+		}.New(bootstrapServers, topic)
+
+		kr, err := c.InitReader(context.Background())
+		if err != nil {
+			return fmt.Errorf("failed to initialize reader: %w", err)
+		}
+
+		resultChan = c.Consume(context.Background(), decoderFactory(wireForamt), kr)
+		exitCode = receiveMessages(resultChan)
+		kr.Close()
 	}
 
-	outChan := c.Consume(context.Background(), decoderFactory(wireForamt), kr)
-	exitCode := receiveMessages(outChan)
-
-	kr.Close()
 	log.Printf("stopping application, with exitcode: %d", exitCode)
 	os.Exit(exitCode)
 
