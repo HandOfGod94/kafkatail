@@ -2,7 +2,6 @@ package consumer_test
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -118,7 +117,6 @@ func TestConsume_Errors(t *testing.T) {
 }
 
 func TestConsumeWithMultipleParitions(t *testing.T) {
-	type partition = int
 	type wantFields struct {
 		parition string
 		offset   string
@@ -164,7 +162,6 @@ func TestConsumeWithMultipleParitions(t *testing.T) {
 			kafkatest.SendMultipleMessagesToParition(t, tc.bootstrapServers, tc.topic, tc.messages)
 
 			results := kafkatest.ReadChanMessages(ctx, outChan)
-			fmt.Printf("output: %+v\n", results)
 
 			var got strings.Builder
 			for _, res := range results[:len(results)-1] {
