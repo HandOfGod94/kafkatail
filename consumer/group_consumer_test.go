@@ -27,9 +27,6 @@ func (suite *GroupConsumerTestSuite) SetupSuite() {
 	suite.bootstrapServer = []string{"localhost:9093"}
 	suite.topic = "kafka-consume-group-id-test"
 	suite.groupID = "foo-test-id"
-}
-
-func (suite *GroupConsumerTestSuite) SetupTest() {
 	kafkatest.CreateTopicWithConfig(context.Background(), kafka.TopicConfig{
 		Topic:             suite.topic,
 		NumPartitions:     2,
@@ -37,12 +34,13 @@ func (suite *GroupConsumerTestSuite) SetupTest() {
 	})
 }
 
-func (gcts *GroupConsumerTestSuite) TearDownTest() {
+func (gcts *GroupConsumerTestSuite) TearDownSuite() {
 	kafkatest.DeleteTopic(context.Background(), gcts.topic)
 }
 
 func (suite *GroupConsumerTestSuite) TestNewGroupConsumer_ShouldNotReturnError() {
-	_, err := consumer.NewGroupConsumer([]string{"localhost: 9093"}, "kafkatail-test-topic", "foo-test-id")
+	c, err := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
+	defer c.Close()
 	assert.NoError(suite.T(), err)
 }
 
@@ -51,6 +49,7 @@ func (suite *GroupConsumerTestSuite) TestConsume_ReturnsMessagesAcrossAllThePart
 	defer cancel()
 
 	gc, _ := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
+	defer gc.Close()
 	resultChan := gc.Consume(ctx, wire.NewPlaintextDecoder())
 
 	kafkatest.SendMultipleMessagesToParition(suite.T(), suite.bootstrapServer, suite.topic, map[partition]string{
