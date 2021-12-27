@@ -82,7 +82,7 @@ func TestKafkatailBase(t *testing.T) {
 			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
 			cmd.Execute(ctx)
 
-			SendMessage(t, context.Background(), []string{LocalBroker}, "kafkatail-test", nil, []byte(tc.msg))
+			SendMessage(t, []string{LocalBroker}, "kafkatail-test", nil, []byte(tc.msg))
 			got := cmd.GetOutput()
 
 			assert.Contains(t, got, tc.want)

@@ -40,7 +40,7 @@ func TestKafkatailPlaintext(t *testing.T) {
 			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
 			cmd.Execute(ctx)
 
-			SendMessage(t, context.Background(), []string{LocalBroker}, kafkaPlainTextTopic, nil, []byte(tc.message))
+			SendMessage(t, []string{LocalBroker}, kafkaPlainTextTopic, nil, []byte(tc.message))
 			got := cmd.GetOutput()
 			assert.Contains(t, string(got), tc.want)
 		})

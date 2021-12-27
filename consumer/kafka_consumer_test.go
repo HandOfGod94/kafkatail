@@ -67,8 +67,8 @@ func TestConsumeSuccses(t *testing.T) {
 			kr, _ := c.InitReader(ctx)
 			outChan := c.Consume(ctx, wire.NewPlaintextDecoder(), kr)
 
-			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("hello"))
-			kafkatest.SendMessage(t, ctx, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("world"))
+			kafkatest.SendMessage(t, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("hello"))
+			kafkatest.SendMessage(t, tc.fields.bootstrapServers, tc.fields.topic, nil, []byte("world"))
 
 			got := kafkatest.ReadChanMessages(ctx, outChan)
 			assert.Contains(t, got[0].Message, tc.want)
