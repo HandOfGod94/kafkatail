@@ -92,7 +92,7 @@ func TestValidations_Success(t *testing.T) {
 			ctx, cancel := context.WithTimeout(rootCmd.Context(), 1*time.Second)
 			defer cancel()
 			err := rootCmd.ExecuteContext(ctx)
-			SendMessage(t, context.Background(), []string{LocalBroker}, topic, nil, []byte(tc.msgSent))
+			SendMessage(t, []string{LocalBroker}, topic, nil, []byte(tc.msgSent))
 
 			assert.NotNil(t, err)
 			got := b.String()

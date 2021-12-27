@@ -50,7 +50,7 @@ func TestKafkatalProto(t *testing.T) {
 			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
 			cmd.Execute(ctx)
 
-			SendMessage(t, context.Background(), []string{LocalBroker}, kafkaProtoTopic, nil, msg)
+			SendMessage(t, []string{LocalBroker}, kafkaProtoTopic, nil, msg)
 
 			got := cmd.GetOutput()
 			assert.Contains(t, got, tc.want)

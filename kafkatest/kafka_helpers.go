@@ -11,29 +11,23 @@ import (
 )
 
 var DefaultTimeout = 3 * time.Second
-
 var KafkaRawClient = kafka.Client{
 	Addr:      kafka.TCP("localhost:9093"),
 	Timeout:   DefaultTimeout,
 	Transport: nil,
 }
 
-func SendMessage(t *testing.T, ctx context.Context, brokers []string, topic string, key, message []byte) {
-	w := &kafka.Writer{
-		Addr:  kafka.TCP(brokers...),
-		Topic: topic,
-	}
-
-	if err := w.WriteMessages(ctx, kafka.Message{
-		Key:   key,
-		Value: message,
-	}); err != nil {
-		t.Log("failed to write messages: ", err)
+func SendMessage(t *testing.T, brokers []string, topic string, key, message []byte) {
+	conn, err := net.Dial("tcp", "localhost:9093")
+	if err != nil {
+		t.Log("failed to connect to kafka broker:", err)
 		t.FailNow()
 	}
 
-	if err := w.Close(); err != nil {
-		t.Log("failed to close writer:", err)
+	kconn := kafka.NewConnWith(conn, kafka.ConnConfig{ClientID: "kafkatail-test-client", Topic: topic})
+	_, err = kconn.WriteMessages(kafka.Message{Key: key, Value: message})
+	if err != nil {
+		t.Log("failed to write messages: ", err)
 		t.FailNow()
 	}
 }
