@@ -35,16 +35,15 @@ func (opts PartitionConsumerOpts) WithOffset(offset int64) PartitionConsumerOpts
 }
 
 func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*partitionConsumer, error) {
-	log.Printf("starting parition consumer with config: %+v", opts)
+	log.Printf("starting partition consumer with config: %+v", opts)
 	if errs := validator.Validate(opts); errs != nil {
 		return nil, errs
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        opts.BootstrapServers,
-		Topic:          opts.Topic,
-		Partition:      opts.Partition,
-		GroupBalancers: []kafka.GroupBalancer{},
+		Brokers:   opts.BootstrapServers,
+		Topic:     opts.Topic,
+		Partition: opts.Partition,
 	})
 
 	if err := reader.SetOffset(opts.Offset); err != nil {

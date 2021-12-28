@@ -23,17 +23,7 @@ const (
 func setup() error {
 	var result error
 
-	topicConfig := kafka.TopicConfig{Topic: kafkaTestTopic, NumPartitions: 1, ReplicationFactor: 1}
-	if err := kafkatest.CreateTopicWithConfig(context.Background(), topicConfig); err != nil {
-		result = multierror.Append(result, err)
-	}
-
-	topicConfig = kafka.TopicConfig{Topic: kafkaTestTopicWithPartition, NumPartitions: 2, ReplicationFactor: 1}
-	if err := kafkatest.CreateTopicWithConfig(context.Background(), topicConfig); err != nil {
-		result = multierror.Append(result, err)
-	}
-
-	topicConfig = kafka.TopicConfig{Topic: kafkaPlainTextTopic, NumPartitions: 1, ReplicationFactor: 1}
+	topicConfig := kafka.TopicConfig{Topic: kafkaPlainTextTopic, NumPartitions: 1, ReplicationFactor: 1}
 	if err := kafkatest.CreateTopicWithConfig(context.Background(), topicConfig); err != nil {
 		result = multierror.Append(result, err)
 	}
@@ -48,14 +38,6 @@ func setup() error {
 
 func teardown() error {
 	var result error
-
-	if err := kafkatest.DeleteTopic(context.Background(), kafkaTestTopic); err != nil {
-		result = multierror.Append(result, err)
-	}
-
-	if err := kafkatest.DeleteTopic(context.Background(), kafkaTestTopicWithPartition); err != nil {
-		result = multierror.Append(result, err)
-	}
 
 	if err := kafkatest.DeleteTopic(context.Background(), kafkaPlainTextTopic); err != nil {
 		result = multierror.Append(result, err)

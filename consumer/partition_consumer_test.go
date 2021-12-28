@@ -38,7 +38,7 @@ func (suite *PartitionConsumerTestSuite) TearDownSuite() {
 	kafkatest.DeleteTopic(context.Background(), suite.opts.Topic)
 }
 
-func (suite *PartitionConsumerTestSuite) TestNewParitionConsumer_SuccessWithValidValues() {
+func (suite *PartitionConsumerTestSuite) TestNewPartitionConsumer_SuccessWithValidValues() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -61,7 +61,7 @@ func (suite *PartitionConsumerTestSuite) TestConsume() {
 			want:      "hello",
 		},
 		{
-			desc:      "should consume only from specific parition when parition number opts is provided",
+			desc:      "should consume only from specific partition when partition number opts is provided",
 			opts:      suite.opts.WithPartition(0),
 			msgToSend: []string{"hello", "world"},
 			want:      "hello",
@@ -91,6 +91,6 @@ func (suite *PartitionConsumerTestSuite) TestConsume() {
 	}
 }
 
-func TestParitionConsumerTestSuite(t *testing.T) {
+func TestPartitionConsumerTestSuite(t *testing.T) {
 	suite.Run(t, new(PartitionConsumerTestSuite))
 }

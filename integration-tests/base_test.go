@@ -8,11 +8,35 @@ import (
 	"testing"
 	"time"
 
+	"github.com/handofgod94/kafkatail/kafkatest"
 	. "github.com/handofgod94/kafkatail/kafkatest"
+	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestKafkatailBase(t *testing.T) {
+type BaseTestSuite struct {
+	suite.Suite
+}
+
+func (suite *BaseTestSuite) SetupSuite() {
+	topicConfig := kafka.TopicConfig{Topic: kafkaTestTopic, NumPartitions: 1, ReplicationFactor: 1}
+	if err := kafkatest.CreateTopicWithConfig(context.Background(), topicConfig); err != nil {
+		suite.FailNow("failed to create test topic:", err)
+	}
+
+	topicConfig = kafka.TopicConfig{Topic: kafkaTestTopicWithPartition, NumPartitions: 2, ReplicationFactor: 1}
+	if err := kafkatest.CreateTopicWithConfig(context.Background(), topicConfig); err != nil {
+		suite.FailNow("failed to create test-topic-with-partition topic:", err)
+	}
+}
+
+func (suite *BaseTestSuite) TearDownSuite() {
+	kafkatest.DeleteTopic(context.Background(), kafkaTestTopic)
+	kafkatest.DeleteTopic(context.Background(), kafkaTestTopicWithPartition)
+}
+
+func (suite *BaseTestSuite) TestKafkatailBase() {
 	testCases := []struct {
 		desc    string
 		cmd     string
@@ -44,16 +68,10 @@ func TestKafkatailBase(t *testing.T) {
 			want: "hello world",
 		},
 		{
-			desc: "with offset option",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --offset=-2 kafkatail-test",
+			desc: "with offset and partition option",
+			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --partition=0 --offset=-2 kafkatail-test",
 			msg:  "hello world",
-			want: "Offset: 0",
-		},
-		{
-			desc: "with partition option",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --partition=0 kafkatail-test",
-			msg:  "hello world",
-			want: "Partition: 0",
+			want: "Partition: 0, Offset: 0",
 		},
 		{
 			desc: "with `from_datetime` option",
@@ -76,13 +94,13 @@ func TestKafkatailBase(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		suite.T().Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
 			cmd.Execute(ctx)
 
-			SendMessage(t, []string{LocalBroker}, "kafkatail-test", nil, []byte(tc.msg))
+			SendMessage(t, []string{LocalBroker}, kafkaTestTopic, nil, []byte(tc.msg))
 			got := cmd.GetOutput()
 
 			assert.Contains(t, got, tc.want)
@@ -90,7 +108,7 @@ func TestKafkatailBase(t *testing.T) {
 	}
 }
 
-func TestTailForMultipleParitions(t *testing.T) {
+func (suite *BaseTestSuite) TestTailForMultiplePartitions() {
 	testCases := []struct {
 		desc         string
 		cmd          string
@@ -100,7 +118,7 @@ func TestTailForMultipleParitions(t *testing.T) {
 	}{
 		{
 			desc: "tail with group_id flag",
-			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafkatail-test-topic-with-partition",
+			cmd:  "kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo --offset=-2 kafkatail-test-topic-with-partition",
 			messages: map[int]string{
 				0: "hello",
 				1: "world",
@@ -120,21 +138,24 @@ func TestTailForMultipleParitions(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		suite.T().Run(tc.desc, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			cmd := Command{T: t, Cmd: tc.cmd, WantErr: tc.wantErr}
 			cmd.Execute(ctx)
 
-			SendMultipleMessagesToParition(t, []string{LocalBroker}, kafkaTestTopicWithPartition, tc.messages)
+			SendMultipleMessagesToPartition(t, []string{LocalBroker}, kafkaTestTopicWithPartition, tc.messages)
 
 			got := cmd.GetOutput()
-			actual := SanitizeString(string(got))
 
-			for _, wt := range tc.wantMessages {
-				assert.Contains(t, actual, SanitizeString(wt))
+			for _, want := range tc.wantMessages {
+				assert.Contains(t, MinifyString(got), MinifyString(want))
 			}
-			assert.Equal(t, len(tc.wantMessages), strings.Count(actual, "Message"))
+			assert.Equal(t, len(tc.wantMessages), strings.Count(got, "Message"))
 		})
 	}
+}
+
+func TestBaseTestSuite(t *testing.T) {
+	suite.Run(t, new(BaseTestSuite))
 }
