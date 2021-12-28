@@ -24,16 +24,6 @@ type PartitionConsumerOpts struct {
 	FromDateTime     time.Time
 }
 
-func (opts PartitionConsumerOpts) WithPartition(partition int) PartitionConsumerOpts {
-	opts.Partition = partition
-	return opts
-}
-
-func (opts PartitionConsumerOpts) WithOffset(offset int64) PartitionConsumerOpts {
-	opts.Offset = offset
-	return opts
-}
-
 func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*partitionConsumer, error) {
 	log.Printf("starting partition consumer with config: %+v", opts)
 	if errs := validator.Validate(opts); errs != nil {

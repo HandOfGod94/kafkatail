@@ -39,7 +39,7 @@ func (gcts *GroupConsumerTestSuite) TearDownSuite() {
 }
 
 func (suite *GroupConsumerTestSuite) TestNewGroupConsumer_ShouldNotReturnError() {
-	c, err := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID, kafka.FirstOffset)
+	c, err := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
 	defer c.Close()
 	assert.NoError(suite.T(), err)
 }
@@ -48,7 +48,7 @@ func (suite *GroupConsumerTestSuite) TestConsume_ReturnsMessagesAcrossAllThePart
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	gc, _ := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID, kafka.FirstOffset)
+	gc, _ := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
 	defer gc.Close()
 	resultChan := gc.Consume(ctx, wire.NewPlaintextDecoder())
 
