@@ -36,15 +36,8 @@ func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*par
 		Partition: opts.Partition,
 	})
 
-	if err := reader.SetOffset(opts.Offset); err != nil {
-		return nil, err
-	}
-
-	if !opts.FromDateTime.IsZero() {
-		err := reader.SetOffsetAt(ctx, opts.FromDateTime)
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize partition consumer. error: %w", err)
-		}
+	if err := seekToOffset(ctx, reader, opts.Offset, opts.FromDateTime); err != nil {
+		return nil, fmt.Errorf("failed to initialize parition consumer: %w", err)
 	}
 
 	return &partitionConsumer{reader}, nil
@@ -80,4 +73,19 @@ func (pc *partitionConsumer) Consume(ctx context.Context, decoder wire.Decoder) 
 
 func (pc *partitionConsumer) Close() error {
 	return pc.reader.Close()
+}
+
+func seekToOffset(ctx context.Context, reader *kafka.Reader, offset int64, fromDateTime time.Time) error {
+	if err := reader.SetOffset(offset); err != nil {
+		return err
+	}
+
+	if !fromDateTime.IsZero() {
+		err := reader.SetOffsetAt(ctx, fromDateTime)
+		if err != nil {
+			return fmt.Errorf("failed to initialize partition consumer. error: %w", err)
+		}
+	}
+
+	return nil
 }
