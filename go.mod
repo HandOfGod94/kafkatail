@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	github.com/golang/protobuf v1.4.2
-	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jhump/protoreflect v1.8.2
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/spf13/cobra v1.1.3

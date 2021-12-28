@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+const kafkaPlainTextTopic = "kafkatail-plaintext-test-topic"
+
 type PlainTextTestSuite struct {
 	suite.Suite
 }

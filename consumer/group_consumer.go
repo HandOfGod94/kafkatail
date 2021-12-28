@@ -14,14 +14,13 @@ type groupConsumer struct {
 	reader *kafka.Reader
 }
 
-func NewGroupConsumer(bootstrapServers []string, topic, groupID string, offset int64) (*groupConsumer, error) {
+func NewGroupConsumer(bootstrapServers []string, topic, groupID string) (*groupConsumer, error) {
 	log.Printf("starting group consumer with config: bootstrapServers %v, topic %s, groupID %s", bootstrapServers, topic, groupID)
 	return &groupConsumer{
 		reader: kafka.NewReader(kafka.ReaderConfig{
-			Brokers:     bootstrapServers,
-			GroupID:     groupID,
-			Topic:       topic,
-			StartOffset: offset,
+			Brokers: bootstrapServers,
+			GroupID: groupID,
+			Topic:   topic,
 		}),
 	}, nil
 

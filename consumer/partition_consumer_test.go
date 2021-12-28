@@ -48,47 +48,19 @@ func (suite *PartitionConsumerTestSuite) TestNewPartitionConsumer_SuccessWithVal
 }
 
 func (suite *PartitionConsumerTestSuite) TestConsume() {
-	testCases := []struct {
-		desc      string
-		opts      consumer.PartitionConsumerOpts
-		msgToSend []string
-		want      string
-	}{
-		{
-			desc:      "should consume messages with valid partition consumer opts",
-			opts:      suite.opts,
-			msgToSend: []string{"hello", "world"},
-			want:      "hello",
-		},
-		{
-			desc:      "should consume only from specific partition when partition number opts is provided",
-			opts:      suite.opts.WithPartition(0),
-			msgToSend: []string{"hello", "world"},
-			want:      "hello",
-		},
-		{
-			desc:      "should consume messages from offset when offset opts is provided",
-			opts:      suite.opts.WithOffset(kafka.LastOffset),
-			msgToSend: []string{"hello", "world"},
-			want:      "world",
-		},
-	}
-	for _, tc := range testCases {
-		suite.T().Run(tc.desc, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-			defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 
-			c, _ := consumer.NewPartitionConsumer(ctx, tc.opts)
-			defer c.Close()
-			outChan := c.Consume(ctx, wire.NewPlaintextDecoder())
+	c, _ := consumer.NewPartitionConsumer(ctx, suite.opts)
+	defer c.Close()
+	outChan := c.Consume(ctx, wire.NewPlaintextDecoder())
 
-			kafkatest.SendMessage(t, suite.opts.BootstrapServers, suite.opts.Topic, nil, []byte("hello"))
-			kafkatest.SendMessage(t, suite.opts.BootstrapServers, suite.opts.Topic, nil, []byte("world"))
+	kafkatest.SendMessage(suite.T(), suite.opts.BootstrapServers, suite.opts.Topic, nil, []byte("hello"))
+	kafkatest.SendMessage(suite.T(), suite.opts.BootstrapServers, suite.opts.Topic, nil, []byte("world"))
 
-			got := kafkatest.ReadChanMessages(ctx, outChan)
-			assert.Contains(t, got[0].Message, tc.want)
-		})
-	}
+	got := kafkatest.ReadChanMessages(ctx, outChan)
+	assert.Contains(suite.T(), got[0].Message, "hello")
+	assert.Contains(suite.T(), got[1].Message, "world")
 }
 
 func TestPartitionConsumerTestSuite(t *testing.T) {

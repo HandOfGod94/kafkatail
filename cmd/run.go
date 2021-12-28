@@ -25,7 +25,7 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 	var exitCode int
 
 	if groupID != "" {
-		konsumer, err := consumer.NewGroupConsumer(bootstrapServers, topic, groupID, offset)
+		konsumer, err := consumer.NewGroupConsumer(bootstrapServers, topic, groupID)
 		if err != nil {
 			return err
 		}

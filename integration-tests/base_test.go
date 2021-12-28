@@ -15,6 +15,11 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+const (
+	kafkaTestTopic              = "kafkatail-test"
+	kafkaTestTopicWithPartition = "kafkatail-test-topic-with-partition"
+)
+
 type BaseTestSuite struct {
 	suite.Suite
 }
