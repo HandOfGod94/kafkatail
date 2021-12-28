@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/handofgod94/kafkatail/consumer"
-	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
 )
+
+type status = int
 
 func runKafkaTail(cmd *cobra.Command, args []string) error {
 	topic := args[0]
@@ -21,69 +22,43 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid datetime provided: %w", err)
 	}
 
-	var resultChan <-chan consumer.Result
-	var exitCode int
-
-	if groupID != "" {
-		konsumer, err := consumer.NewGroupConsumer(bootstrapServers, topic, groupID)
-		if err != nil {
-			return err
-		}
-		resultChan = konsumer.Consume(context.Background(), decoderFactory(wireForamt))
-		exitCode = receiveMessages(resultChan)
-		konsumer.Close()
-	} else {
-		konsumer, err := consumer.NewPartitionConsumer(context.Background(), consumer.PartitionConsumerOpts{
-			BootstrapServers: bootstrapServers,
-			Topic:            topic,
-			Partition:        partition,
-			Offset:           offset,
-			FromDateTime:     parsedDT,
-		})
-		if err != nil {
-			return err
-		}
-
-		resultChan = konsumer.Consume(context.Background(), decoderFactory(wireForamt))
-		exitCode = receiveMessages(resultChan)
-		konsumer.Close()
+	konsumer, err := consumerFactory(topic, groupID, parsedDT)
+	if err != nil {
+		return err
 	}
 
+	resultChan := konsumer.Consume(context.Background(), decoderFactory(wireForamt))
+	exitCode := <-receiveMessages(resultChan)
+
+	konsumer.Close()
 	log.Printf("stopping application, with exitcode: %d", exitCode)
 	os.Exit(exitCode)
 
 	return nil
 }
 
-func receiveMessages(outChan <-chan consumer.Result) int {
+func receiveMessages(resultChan <-chan consumer.Result) <-chan status {
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	loop := true
-	exitCode := 0
-	for loop {
-		select {
-		case result := <-outChan:
-			if result.Err != nil {
-				log.Print("error while consuming messages:", result.Err)
-				loop = false
-				exitCode = 1
-			}
-			fmt.Println(result.Message)
-		case <-sigs:
-			loop = false
-		}
-	}
-	return exitCode
-}
+	exitCode := make(chan status)
 
-func decoderFactory(wireFormat wire.Format) wire.Decoder {
-	switch wireFormat {
-	case wire.PlainText:
-		return wire.NewPlaintextDecoder()
-	case wire.Proto:
-		return wire.NewProtoDecoder(protoFile, messageType, includePaths)
-	default:
-		log.Fatalf("unsupported message type. received: %v, supported: %v", messageType, "plaintext, proto")
-		return nil
-	}
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		for {
+			select {
+			case result := <-resultChan:
+				if result.Err != nil {
+					log.Print("error while consuming messages:", result.Err)
+					exitCode <- 1
+					break
+				}
+				fmt.Println(result.Message)
+			case <-sigs:
+				exitCode <- 0
+				break
+			}
+		}
+	}()
+
+	return exitCode
 }
