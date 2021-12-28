@@ -44,18 +44,19 @@ func receiveMessages(resultChan <-chan consumer.Result) <-chan status {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		for {
+		loop := true
+		for loop {
 			select {
 			case result := <-resultChan:
 				if result.Err != nil {
+					loop = false
 					log.Print("error while consuming messages:", result.Err)
 					exitCode <- 1
-					break
 				}
 				fmt.Println(result.Message)
 			case <-sigs:
+				loop = false
 				exitCode <- 0
-				break
 			}
 		}
 	}()

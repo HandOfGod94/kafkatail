@@ -43,6 +43,7 @@ func (suite *PartitionConsumerTestSuite) TestNewPartitionConsumer_SuccessWithVal
 	defer cancel()
 
 	c, err := consumer.NewPartitionConsumer(ctx, suite.opts)
+	//lint:ignore SA5001 this test is for checking err is nil
 	defer c.Close()
 	assert.NoError(suite.T(), err)
 }
