@@ -25,29 +25,28 @@ func runKafkaTail(cmd *cobra.Command, args []string) error {
 	var exitCode int
 
 	if groupID != "" {
-		gc, err := consumer.NewGroupConsumer(bootstrapServers, topic, groupID)
+		konsumer, err := consumer.NewGroupConsumer(bootstrapServers, topic, groupID, offset)
 		if err != nil {
 			return err
 		}
-		resultChan = gc.Consume(context.Background(), decoderFactory(wireForamt))
+		resultChan = konsumer.Consume(context.Background(), decoderFactory(wireForamt))
 		exitCode = receiveMessages(resultChan)
-		gc.Close()
+		konsumer.Close()
 	} else {
-		c := consumer.Options{
-			GroupID:      groupID,
-			Offset:       offset,
-			Partition:    partition,
-			FromDateTime: parsedDT,
-		}.New(bootstrapServers, topic)
-
-		kr, err := c.InitReader(context.Background())
+		konsumer, err := consumer.NewPartitionConsumer(context.Background(), consumer.PartitionConsumerOpts{
+			BootstrapServers: bootstrapServers,
+			Topic:            topic,
+			Partition:        partition,
+			Offset:           offset,
+			FromDateTime:     parsedDT,
+		})
 		if err != nil {
-			return fmt.Errorf("failed to initialize reader: %w", err)
+			return err
 		}
 
-		resultChan = c.Consume(context.Background(), decoderFactory(wireForamt), kr)
+		resultChan = konsumer.Consume(context.Background(), decoderFactory(wireForamt))
 		exitCode = receiveMessages(resultChan)
-		kr.Close()
+		konsumer.Close()
 	}
 
 	log.Printf("stopping application, with exitcode: %d", exitCode)

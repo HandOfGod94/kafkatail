@@ -68,10 +68,10 @@ func StreamToRead(wantErr bool, stdout, stderr io.ReadCloser) io.ReadCloser {
 	return stdout
 }
 
-func SanitizeString(str string) string {
-	sanitizeString := strings.TrimSpace(str)
-	sanitizeString = strings.ReplaceAll(sanitizeString, " ", "")
-	sanitizeString = strings.ReplaceAll(sanitizeString, "\t", "")
-	sanitizeString = strings.ReplaceAll(sanitizeString, "\n", "")
-	return sanitizeString
+func MinifyString(str string) string {
+	miniStr := strings.TrimSpace(str)
+	miniStr = strings.ReplaceAll(miniStr, " ", "")
+	miniStr = strings.ReplaceAll(miniStr, "\t", "")
+	miniStr = strings.ReplaceAll(miniStr, "\n", "")
+	return miniStr
 }

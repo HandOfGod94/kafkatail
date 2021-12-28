@@ -18,13 +18,15 @@ var KafkaRawClient = kafka.Client{
 }
 
 func SendMessage(t *testing.T, brokers []string, topic string, key, message []byte) {
-	conn, err := net.Dial("tcp", "localhost:9093")
+	conn, err := net.Dial("tcp", brokers[0])
+	defer conn.Close()
 	if err != nil {
 		t.Log("failed to connect to kafka broker:", err)
 		t.FailNow()
 	}
 
-	kconn := kafka.NewConnWith(conn, kafka.ConnConfig{ClientID: "kafkatail-test-client", Topic: topic})
+	kconn := kafka.NewConnWith(conn, kafka.ConnConfig{ClientID: "kafkatail-test-client", Topic: topic, Partition: 0})
+	defer kconn.Close()
 	_, err = kconn.WriteMessages(kafka.Message{Key: key, Value: message})
 	if err != nil {
 		t.Log("failed to write messages: ", err)
@@ -32,13 +34,13 @@ func SendMessage(t *testing.T, brokers []string, topic string, key, message []by
 	}
 }
 
-func SendMultipleMessagesToParition(t *testing.T, brokers []string, topic string, msgs map[int]string) {
+func SendMultipleMessagesToPartition(t *testing.T, brokers []string, topic string, msgs map[int]string) {
 	for partition, msg := range msgs {
 		SendMessageToPartition(t, brokers, topic, partition, nil, []byte(msg))
 	}
 }
 
-func SendMessageToPartition(t *testing.T, brokers []string, topic string, parition int, key, message []byte) {
+func SendMessageToPartition(t *testing.T, brokers []string, topic string, partition int, key, message []byte) {
 	conn, err := net.Dial("tcp", brokers[0])
 	if err != nil {
 		t.Log("Failed to connect to kafka broker. %w", err)
@@ -47,7 +49,7 @@ func SendMessageToPartition(t *testing.T, brokers []string, topic string, pariti
 	connConfig := kafka.ConnConfig{
 		ClientID:  "kafkatail-test-client",
 		Topic:     topic,
-		Partition: parition,
+		Partition: partition,
 	}
 
 	kconn := kafka.NewConnWith(conn, connConfig)

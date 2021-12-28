@@ -11,7 +11,7 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-* A breif description of how your kafka setup looks like. for e.g., num-of-paritions, replication-factor
+* A breif description of how your kafka setup looks like. for e.g., num-of-partitions, replication-factor
 etc. on kafka-topic.
 * Complete `kafkatail` command, with flags, which caused issue
 

@@ -39,7 +39,7 @@ func (gcts *GroupConsumerTestSuite) TearDownSuite() {
 }
 
 func (suite *GroupConsumerTestSuite) TestNewGroupConsumer_ShouldNotReturnError() {
-	c, err := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
+	c, err := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID, kafka.FirstOffset)
 	defer c.Close()
 	assert.NoError(suite.T(), err)
 }
@@ -48,11 +48,11 @@ func (suite *GroupConsumerTestSuite) TestConsume_ReturnsMessagesAcrossAllThePart
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	gc, _ := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
+	gc, _ := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID, kafka.FirstOffset)
 	defer gc.Close()
 	resultChan := gc.Consume(ctx, wire.NewPlaintextDecoder())
 
-	kafkatest.SendMultipleMessagesToParition(suite.T(), suite.bootstrapServer, suite.topic, map[partition]string{
+	kafkatest.SendMultipleMessagesToPartition(suite.T(), suite.bootstrapServer, suite.topic, map[partition]string{
 		0: "foo",
 		1: "bar",
 	})
