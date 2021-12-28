@@ -40,6 +40,7 @@ func (gcts *GroupConsumerTestSuite) TearDownSuite() {
 
 func (suite *GroupConsumerTestSuite) TestNewGroupConsumer_ShouldNotReturnError() {
 	c, err := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
+	//lint:ignore SA5001 this test is for checking err is nil
 	defer c.Close()
 	assert.NoError(suite.T(), err)
 }

@@ -19,11 +19,11 @@ var KafkaRawClient = kafka.Client{
 
 func SendMessage(t *testing.T, brokers []string, topic string, key, message []byte) {
 	conn, err := net.Dial("tcp", brokers[0])
-	defer conn.Close()
 	if err != nil {
 		t.Log("failed to connect to kafka broker:", err)
 		t.FailNow()
 	}
+	defer conn.Close()
 
 	kconn := kafka.NewConnWith(conn, kafka.ConnConfig{ClientID: "kafkatail-test-client", Topic: topic, Partition: 0})
 	defer kconn.Close()
