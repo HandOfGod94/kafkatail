@@ -20,7 +20,7 @@ var (
 	messageType      string
 )
 
-const appVersion = "0.1.3"
+const appVersion = "dev"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -36,7 +36,7 @@ var rootCmd = &cobra.Command{
 	# tail proto messages from a topic
 	kafkatail --bootstrap_servers=localhost:9093 --wire_format=proto --proto_file=starwars.proto --include_paths="../testdata" --message_type=Human kafkatail-test-proto
 
-	# tail messages from an offset. Default: -1 (latest). For earliets, use offset=-2
+	# tail messages from an offset. Default: -1 (latest). For earliest, use offset=-2
 	kafkatail --bootstrap_servers=localhost:9093 --offset=12 kafkatail-test-base
 
 	# tail messages from specific time
