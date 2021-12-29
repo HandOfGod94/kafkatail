@@ -52,7 +52,7 @@ func (suite *BaseTestSuite) TestKafkatailBase() {
 		{
 			desc: "check version",
 			cmd:  "kafkatail --version",
-			want: "dev",
+			want: "0.1.4",
 		},
 		{
 			desc:    "print error for missing required args",

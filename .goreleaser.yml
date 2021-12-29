@@ -45,6 +45,7 @@ scoop:
   homepage: "https://github.com/HandOfGod94/kafkatail"
   description: "tail kafka logs from any topic, any wire format on local console"
   license: Apache-2.0
+  skip_upload: auto
 changelog:
   sort: asc
   filters:
