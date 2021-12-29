@@ -13,7 +13,3 @@ var FormatIDs = map[Format][]string{
 	PlainText: {"plaintext"},
 	Proto:     {"proto"},
 }
-
-type Decoder interface {
-	Decode([]byte) (string, error)
-}

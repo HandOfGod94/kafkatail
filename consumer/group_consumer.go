@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -26,7 +25,7 @@ func NewGroupConsumer(bootstrapServers []string, topic, groupID string) (*groupC
 
 }
 
-func (gc *groupConsumer) Consume(ctx context.Context, decoder wire.Decoder) <-chan Result {
+func (gc *groupConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
 	resultChan := make(chan Result)
 
 	go func(ctx context.Context) {

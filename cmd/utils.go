@@ -12,7 +12,7 @@ import (
 
 type closerConsumer interface {
 	io.Closer
-	Consume(ctx context.Context, decoder wire.Decoder) <-chan consumer.Result
+	Consume(ctx context.Context, decoder consumer.WireDecoder) <-chan consumer.Result
 }
 
 func consumerFactory(topic, groupID string, fromDateTime time.Time) (closerConsumer, error) {
@@ -29,7 +29,7 @@ func consumerFactory(topic, groupID string, fromDateTime time.Time) (closerConsu
 	}
 }
 
-func decoderFactory(wireFormat wire.Format) wire.Decoder {
+func decoderFactory(wireFormat wire.Format) consumer.WireDecoder {
 	switch wireFormat {
 	case wire.PlainText:
 		return wire.NewPlaintextDecoder()

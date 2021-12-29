@@ -63,9 +63,6 @@ func TestValidations_Success(t *testing.T) {
 			desc:    "with valid args for plaintext messages",
 			cmdArgs: []string{"--bootstrap_servers=localhost:9093", "kafka-test"},
 		},
-		// {
-		// 	desc: "with valid args for proto messages",
-		// },
 	}
 
 	const topic = "kafka-test"

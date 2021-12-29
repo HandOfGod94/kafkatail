@@ -1,26 +1,36 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
+	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
 )
 
 var (
-	bootstrapServers []string
-	groupID          string
-	wireForamt       wire.Format
-	offset           int64
-	partition        int
-	fromDateTime     string
-	protoFile        string
-	includePaths     []string
-	messageType      string
+	bootstrapServers   []string
+	groupID            string
+	wireForamt         wire.Format
+	offset             int64
+	partition          int
+	fromDateTime       string
+	parsedFromDateTime time.Time
+	protoFile          string
+	includePaths       []string
+	messageType        string
 )
 
 const appVersion = "dev"
+
+type status = int
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -48,15 +58,37 @@ var rootCmd = &cobra.Command{
 	# tail from multiple partitions, using group_id
 	kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafka-consume-gorup-id-int-test
 	`,
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		formatFlag := cmd.Flags().Lookup("wire_format")
 		if formatFlag.Value.String() == "proto" {
 			cmd.MarkFlagRequired("proto_file")
 			cmd.MarkFlagRequired("include_paths")
 			cmd.MarkFlagRequired("message_type")
 		}
+
+		parsedFromDateTime, err = time.Parse(time.RFC3339, fromDateTime)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	},
-	RunE: runKafkaTail,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		topic := args[0]
+		konsumer, err := consumerFactory(topic, groupID, parsedFromDateTime)
+		if err != nil {
+			return err
+		}
+
+		resultChan := konsumer.Consume(context.Background(), decoderFactory(wireForamt))
+		exitCode := <-receiveMessages(resultChan)
+
+		konsumer.Close()
+		log.Printf("stopping application, with exitcode: %d", exitCode)
+		os.Exit(exitCode)
+
+		return nil
+	},
 }
 
 func Execute() {
@@ -82,4 +114,31 @@ func init() {
 	rootCmd.Flags().Lookup("wire_format").NoOptDefVal = "plaintext"
 
 	rootCmd.MarkFlagRequired("bootstrap_servers")
+}
+
+func receiveMessages(resultChan <-chan consumer.Result) <-chan status {
+	sigs := make(chan os.Signal, 1)
+	exitCode := make(chan status)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		loop := true
+		for loop {
+			select {
+			case result := <-resultChan:
+				if result.Err != nil {
+					loop = false
+					log.Print("error while consuming messages:", result.Err)
+					exitCode <- 1
+				}
+				fmt.Println(result.Message)
+			case <-sigs:
+				loop = false
+				exitCode <- 0
+			}
+		}
+	}()
+
+	return exitCode
 }

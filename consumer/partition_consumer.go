@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -44,7 +43,7 @@ func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*par
 	return &partitionConsumer{reader}, nil
 }
 
-func (pc *partitionConsumer) Consume(ctx context.Context, decoder wire.Decoder) <-chan Result {
+func (pc *partitionConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
 	resultChan := make(chan Result)
 
 	go func(ctx context.Context) {
