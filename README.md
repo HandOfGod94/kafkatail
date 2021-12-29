@@ -12,10 +12,6 @@ CLI app to tail kafka logs on console from any topic having messages in any form
 
 **Contents**  
 - [Installation](#installation)
-  - [MacOS using `homebrew`](#macos-using-homebrew)
-  - [Windows using `scoop`](#windows-using-scoop)
-  - [Go Toolchain](#go-toolchain)
-  - [Github Releases](#github-releases)
 - [QuickStart](#quickstart)
 - [Usage](#usage)
 - [Examples](#examples)
@@ -26,18 +22,14 @@ CLI app to tail kafka logs on console from any topic having messages in any form
 
 Feel free to use any of the available methods
 
-#### MacOS using `homebrew`
+* **Install via Homebrew**
 ```sh
 brew install handofgod94/tap/kafkatail
 ```
 
-#### Windows using `scoop`
-```cmd
-scoop add handofgod94-bucket https://github.com/HandOfGod94/scoop-bucket.git
-scoop install kafkatail
-```
+_OR_
 
-#### Go Toolchain
+* **Install via `go` toolchain**
   + For Go 1.16 or higher
     ```sh
     go install github.com/handofgod94/kafkatail@v0.1.3
@@ -49,9 +41,10 @@ scoop install kafkatail
     ```
     The go binary will be installed in `$GOPATH/bin`
 
-#### Github Releases
-* Download executable binaries from [Release](https://github.com/HandOfGod94/kafkatail/releases) page
+_OR_
 
+* **Download executable binaries from [Release](https://github.com/HandOfGod94/kafkatail/releases) page**
+> Soon will be available via package managers
 
 ### QuickStart
 
