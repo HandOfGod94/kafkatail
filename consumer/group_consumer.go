@@ -6,26 +6,39 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/segmentio/kafka-go"
 )
 
-type groupConsumer struct {
+type GroupConsumer struct {
 	reader *kafka.Reader
 }
 
-func NewGroupConsumer(bootstrapServers []string, topic, groupID string) (*groupConsumer, error) {
-	log.Printf("starting group consumer with config: bootstrapServers %v, topic %s, groupID %s", bootstrapServers, topic, groupID)
-	return &groupConsumer{
+type GroupConsumerOpts struct {
+	BootstrapServers []string `validate:"required"`
+	GroupID          string   `validate:"required"`
+	Topic            string   `validate:"required"`
+}
+
+func NewGroupConsumer(opts GroupConsumerOpts) (*GroupConsumer, error) {
+	log.Printf("starting group consumer with config: %+v", opts)
+
+	validate := validator.New()
+	if err := validate.Struct(opts); err != nil {
+		return nil, err
+	}
+
+	return &GroupConsumer{
 		reader: kafka.NewReader(kafka.ReaderConfig{
-			Brokers: bootstrapServers,
-			GroupID: groupID,
-			Topic:   topic,
+			Brokers: opts.BootstrapServers,
+			GroupID: opts.GroupID,
+			Topic:   opts.Topic,
 		}),
 	}, nil
 
 }
 
-func (gc *groupConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
+func (gc *GroupConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
 	resultChan := make(chan Result)
 
 	go func(ctx context.Context) {
@@ -53,7 +66,7 @@ func (gc *groupConsumer) Consume(ctx context.Context, decoder WireDecoder) <-cha
 	return resultChan
 }
 
-func (gc *groupConsumer) Close() error {
+func (gc *GroupConsumer) Close() error {
 	log.Println("closing group consumer")
 	return gc.reader.Close()
 }

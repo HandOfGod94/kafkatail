@@ -11,7 +11,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type partitionConsumer struct {
+type PartitionConsumer struct {
 	reader *kafka.Reader
 }
 
@@ -23,7 +23,7 @@ type PartitionConsumerOpts struct {
 	FromDateTime     time.Time
 }
 
-func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*partitionConsumer, error) {
+func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*PartitionConsumer, error) {
 	log.Printf("starting partition consumer with config: %+v", opts)
 	validate := validator.New()
 	if errs := validate.Struct(opts); errs != nil {
@@ -40,10 +40,10 @@ func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*par
 		return nil, fmt.Errorf("failed to initialize parition consumer: %w", err)
 	}
 
-	return &partitionConsumer{reader}, nil
+	return &PartitionConsumer{reader}, nil
 }
 
-func (pc *partitionConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
+func (pc *PartitionConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
 	resultChan := make(chan Result)
 
 	go func(ctx context.Context) {
@@ -71,7 +71,7 @@ func (pc *partitionConsumer) Consume(ctx context.Context, decoder WireDecoder) <
 	return resultChan
 }
 
-func (pc *partitionConsumer) Close() error {
+func (pc *PartitionConsumer) Close() error {
 	return pc.reader.Close()
 }
 

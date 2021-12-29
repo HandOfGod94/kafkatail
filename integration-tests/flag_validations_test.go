@@ -30,7 +30,7 @@ func TestFlagValidationForPlainText(t *testing.T) {
 		{
 			desc: "invalid format for from_datetime",
 			cmd:  "kafkatail --wire_format=plaintext --from_datetime=foobar --bootstrap_servers=localhost:9093 kafkatail-test",
-			want: `invalid datetime provided`,
+			want: `Error: parsing time "foobar"`,
 		},
 	}
 	for _, tc := range testCases {

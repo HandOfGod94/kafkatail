@@ -17,7 +17,11 @@ type closerConsumer interface {
 
 func consumerFactory(topic, groupID string, fromDateTime time.Time) (closerConsumer, error) {
 	if groupID != "" {
-		return consumer.NewGroupConsumer(bootstrapServers, topic, groupID)
+		return consumer.NewGroupConsumer(consumer.GroupConsumerOpts{
+			BootstrapServers: bootstrapServers,
+			GroupID:          groupID,
+			Topic:            topic,
+		})
 	} else {
 		return consumer.NewPartitionConsumer(context.Background(), consumer.PartitionConsumerOpts{
 			BootstrapServers: bootstrapServers,
