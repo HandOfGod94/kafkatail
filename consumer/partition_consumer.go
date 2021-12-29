@@ -7,9 +7,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
-	"gopkg.in/validator.v2"
 )
 
 type partitionConsumer struct {
@@ -17,16 +17,17 @@ type partitionConsumer struct {
 }
 
 type PartitionConsumerOpts struct {
-	BootstrapServers []string `validate:"min=1"`
-	Topic            string   `validate:"min=1"`
-	Partition        int      `validate:"min=0"`
+	BootstrapServers []string `validate:"required"`
+	Topic            string   `validate:"required"`
+	Partition        int      `validate:"gte=0"`
 	Offset           int64
 	FromDateTime     time.Time
 }
 
 func NewPartitionConsumer(ctx context.Context, opts PartitionConsumerOpts) (*partitionConsumer, error) {
 	log.Printf("starting partition consumer with config: %+v", opts)
-	if errs := validator.Validate(opts); errs != nil {
+	validate := validator.New()
+	if errs := validate.Struct(opts); errs != nil {
 		return nil, errs
 	}
 
