@@ -28,7 +28,7 @@ var (
 	messageType        string
 )
 
-const appVersion = "0.1.4"
+const appVersion = "dev"
 
 type status = int
 
