@@ -46,11 +46,12 @@ func (suite *GroupConsumerTestSuite) TestNewGroupConsumer_ShouldNotReturnError()
 }
 
 func (suite *GroupConsumerTestSuite) TestConsume_ReturnsMessagesAcrossAllThePartitions() {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	gc, _ := consumer.NewGroupConsumer(suite.bootstrapServer, suite.topic, suite.groupID)
 	defer gc.Close()
+
 	resultChan := gc.Consume(ctx, wire.NewPlaintextDecoder())
 
 	kafkatest.SendMultipleMessagesToPartition(suite.T(), suite.bootstrapServer, suite.topic, map[partition]string{

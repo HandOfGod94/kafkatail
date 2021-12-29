@@ -76,16 +76,9 @@ func (pc *partitionConsumer) Close() error {
 }
 
 func seekToOffset(ctx context.Context, reader *kafka.Reader, offset int64, fromDateTime time.Time) error {
-	if err := reader.SetOffset(offset); err != nil {
-		return err
-	}
-
 	if !fromDateTime.IsZero() {
-		err := reader.SetOffsetAt(ctx, fromDateTime)
-		if err != nil {
-			return fmt.Errorf("failed to initialize partition consumer. error: %w", err)
-		}
+		return reader.SetOffsetAt(ctx, fromDateTime)
 	}
 
-	return nil
+	return reader.SetOffset(offset)
 }

@@ -25,7 +25,7 @@ func SendMessage(t *testing.T, brokers []string, topic string, key, message []by
 	}
 	defer conn.Close()
 
-	kconn := kafka.NewConnWith(conn, kafka.ConnConfig{ClientID: "kafkatail-test-client", Topic: topic, Partition: 0})
+	kconn := kafka.NewConnWith(conn, kafka.ConnConfig{ClientID: "kafkatail-test-client", Topic: topic})
 	defer kconn.Close()
 	_, err = kconn.WriteMessages(kafka.Message{Key: key, Value: message})
 	if err != nil {
@@ -46,19 +46,16 @@ func SendMessageToPartition(t *testing.T, brokers []string, topic string, partit
 		t.Log("Failed to connect to kafka broker. %w", err)
 		t.FailNow()
 	}
-	connConfig := kafka.ConnConfig{
+	defer conn.Close()
+
+	kconn := kafka.NewConnWith(conn, kafka.ConnConfig{
 		ClientID:  "kafkatail-test-client",
 		Topic:     topic,
 		Partition: partition,
-	}
+	})
+	defer kconn.Close()
 
-	kconn := kafka.NewConnWith(conn, connConfig)
-	msg := kafka.Message{
-		Key:   key,
-		Value: message,
-	}
-
-	_, err = kconn.WriteMessages(msg)
+	_, err = kconn.WriteMessages(kafka.Message{Key: key, Value: message})
 	if err != nil {
 		t.Log("failed to send write message to broker:", err)
 		t.FailNow()
