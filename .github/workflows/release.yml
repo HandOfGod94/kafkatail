@@ -4,6 +4,7 @@ on: workflow_dispatch
 
 env:
   HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
+  SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
 
 jobs:
   goreleaser:
