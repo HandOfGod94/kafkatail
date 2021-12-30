@@ -19,7 +19,7 @@ snapcrafts:
   - id: kafkatail-snap
     summary: "tail kafka logs from any topic, any wire format on local console"
     description: "CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ..."
-    grade: stable
+    grade: devel
     confinement: strict
     license: "Apache-2.0"
     base: bare
