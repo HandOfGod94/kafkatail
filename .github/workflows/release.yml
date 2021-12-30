@@ -5,6 +5,7 @@ on: workflow_dispatch
 env:
   HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
   SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
+  SNAPCRAFT_LOGIN: ${{ secrets.SNAPCRAFT_LOGIN }}
 
 jobs:
   goreleaser:
@@ -20,6 +21,10 @@ jobs:
           go-version: 1.16
       - name: Get latest release tag
         run: echo "RELEASE_VERSION=`echo $(git describe --abbrev=0)`" >> $GITHUB_ENV
+      - name: Install snapcraft deps
+        run: sudo snap install snapcraft --channel=6.0/stable --classic
+      - name: Login to snapcraft
+        run: echo ${{ env.SNAPCRAFT_LOGIN }} | snapcraft login --with -
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
