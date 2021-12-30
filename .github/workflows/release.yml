@@ -22,7 +22,7 @@ jobs:
       - name: Get latest release tag
         run: echo "RELEASE_VERSION=`echo $(git describe --abbrev=0)`" >> $GITHUB_ENV
       - name: Install snapcraft deps
-        run: sudo snap install snapcraft --channel=6.0/stable --classic
+        run: sudo snap install snapcraft --stable --classic
       - name: Login to snapcraft
         run: echo ${{ env.SNAPCRAFT_LOGIN }} | snapcraft login --with -
       - name: Run GoReleaser
