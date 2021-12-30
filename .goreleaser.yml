@@ -15,6 +15,14 @@ archives:
       windows: Windows
       386: i386
       amd64: x86_64
+snapcrafts:
+  - id: kafkatail-snap
+    summary: "tail kafka logs from any topic, any wire format on local console"
+    description: "CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ..."
+    grade: stable
+    confinement: strict
+    license: "Apache-2.0"
+    base: bare
 checksum:
   name_template: 'checksums.txt'
 brews:
@@ -30,8 +38,8 @@ brews:
       email: gahan94rakh@gmail.com
     commit_msg_template: 'Brew formula update for {{ .ProjectName }} version {{ .Tag }}'
     homepage: 'https://github.com/HandOfGod94/kafkatail'
-    description: 'tail kafka logs from any topic, any wire format on local console'
-    license: 'Apache-2.0'
+    description: "tail kafka logs from any topic, any wire format on local console"
+    license: "Apache-2.0"
 scoop:
   bucket:
     owner: handofgod94
