@@ -23,6 +23,7 @@ snapcrafts:
     confinement: strict
     license: "Apache-2.0"
     base: bare
+    publish: true
 checksum:
   name_template: 'checksums.txt'
 brews:
