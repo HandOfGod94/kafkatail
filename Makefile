@@ -42,6 +42,7 @@ build:
 
 fmt:
 	go fmt ./...
+	gofmt -s -w .
 
 setup-tools:
 	go install github.com/fzipp/gocyclo/cmd/gocyclo@latest

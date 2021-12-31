@@ -13,7 +13,7 @@ CLI app to tail kafka logs on console from any topic having messages in any form
 **Contents**  
 - [Installation](#installation)
   - [MacOS using `homebrew`](#macos-using-homebrew)
-  - [Linux using `snapcraft`](#linux-using-snapcraft)
+  - [Linux using `snap`](#linux-using-snap)
   - [Windows using `scoop`](#windows-using-scoop)
   - [Go Toolchain](#go-toolchain)
   - [Github Releases](#github-releases)
@@ -32,7 +32,7 @@ Feel free to use any of the available methods
 brew install handofgod94/tap/kafkatail
 ```
 
-#### Linux using `snapcraft`
+#### Linux using `snap`
 ```sh
 # currently only available on beta and edge channels
 sudo snap install kafkatail --beta
