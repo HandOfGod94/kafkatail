@@ -1,7 +1,5 @@
 APP_NAME=kafkatail
 
-include scripts/cucumber.mk
-
 all: clean fmt tidy build install
 
 clean:
@@ -52,3 +50,5 @@ setup-tools:
 	go install github.com/uudashr/gocognit/cmd/gocognit@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install github.com/mcubik/goverreport@latest
+
+include scripts/cucumber.mk
