@@ -1,5 +1,7 @@
 APP_NAME=kafkatail
 
+include scripts/cucumber.mk
+
 all: clean fmt tidy build install
 
 clean:
