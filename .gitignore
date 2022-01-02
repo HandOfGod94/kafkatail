@@ -2,3 +2,4 @@
 coverage.out
 .vscode/
 dist/
+bin/
