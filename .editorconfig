@@ -11,7 +11,9 @@ indent_size = 4
 [Makefile]
 indent_style = tab
 
-[*.go]
+[Makefile]
+
+[*.{go,mk}]
 indent_style = tab
 
 [*.yml]
