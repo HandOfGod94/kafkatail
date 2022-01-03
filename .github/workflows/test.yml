@@ -30,27 +30,53 @@ jobs:
             KAFKA_CFG_ADVERTISED_LISTENERS: "CLIENT://kafka:9092,EXTERNAL://localhost:9093"
             KAFKA_INTER_BROKER_LISTENER_NAME: "CLIENT"
             ALLOW_PLAINTEXT_LISTENER: "yes"
-          # TODO: removing depends_on for now from CI.
-          # depends_on:
-          #   - zookeeper
 
     steps:
     - uses: actions/checkout@v2
-
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: 1.16
-
     - name: Lint
       run: |
         make setup-tools
         staticcheck ./...
-
     - name: Test
-      run: 	go test -timeout 60s -count=1 -race ./...
+      run: go test -timeout 60s -count=1 -race ./...
 
-    - name: Run Integration Tests
-      run: |
-        go install
-        go test -p 1 -count=1 -timeout 90s -tags=integration ./integration-tests
+
+  cucumber-test:
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    runs-on: ubuntu-latest
+
+    services:
+        zookeeper:
+          image: docker.io/bitnami/zookeeper:3.7
+          ports:
+            - "2181:2181"
+          env:
+            ALLOW_ANONYMOUS_LOGIN: yes
+        kafka:
+          image: docker.io/bitnami/kafka:2
+          ports:
+            - "9092:9092"
+            - "9093:9093"
+          env:
+            KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper:2181"
+            KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT"
+            KAFKA_CFG_LISTENERS: "CLIENT://:9092,EXTERNAL://:9093"
+            KAFKA_CFG_ADVERTISED_LISTENERS: "CLIENT://kafka:9092,EXTERNAL://localhost:9093"
+            KAFKA_INTER_BROKER_LISTENER_NAME: "CLIENT"
+            ALLOW_PLAINTEXT_LISTENER: "yes"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+          bundler-cache: true
+      - name: Run Integration Tests
+        run: |
+          bundle binstub cucumber --path bin
+          bin/cucumber
