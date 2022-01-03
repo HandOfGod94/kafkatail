@@ -70,4 +70,4 @@ DEPENDENCIES
   ruby-kafka (~> 1.4)
 
 BUNDLED WITH
-   2.3.4
+   2.1.4
