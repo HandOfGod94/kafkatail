@@ -82,6 +82,6 @@ jobs:
           go-version: 1.16
       - name: Run Integration Tests
         run: |
-          go install
+          go install -mod=readonly
           bundle binstub cucumber --path bin
           bin/cucumber
