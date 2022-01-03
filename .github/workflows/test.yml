@@ -76,7 +76,12 @@ jobs:
         with:
           ruby-version: 2.7
           bundler-cache: true
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
       - name: Run Integration Tests
         run: |
+          go install
           bundle binstub cucumber --path bin
           bin/cucumber
