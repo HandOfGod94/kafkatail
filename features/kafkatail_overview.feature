@@ -7,7 +7,9 @@ Feature: kafkatail [flags] topic
   So that it will help me while debugging messaging system
 
   @no-kafka
-  Scenario: topic is a required args
+  Scenario: kafkatail
+    topic is required args
+
     When I run `kafkatail`
     Then the exit status should be 1
     And the output should contain:
@@ -16,7 +18,9 @@ Feature: kafkatail [flags] topic
     """
 
   @no-kafka
-  Scenario: bootstrap_servers flag is required
+  Scenario: kafatail test-topic
+    `bootstrap_servers` flag is required
+
     When I run `kafkatail test-topic`
     Then the exit status should be 1
     And the output should contain:
@@ -24,7 +28,9 @@ Feature: kafkatail [flags] topic
     Error: required flag(s) "bootstrap_servers" not set
     """
 
-  Scenario: prints message when pushed to topic
+  Scenario: kafkatail --bootstrap_servers=localhost:9093 test-topic
+    prints message when pushed to topic
+
     Given "test-topic" is present on kafka-broker "localhost:9093" with 1 partition
     And I wait 2.0 seconds for a command to start up
     When I run `kafkatail --bootstrap_servers=localhost:9093 test-topic` in background
@@ -32,7 +38,9 @@ Feature: kafkatail [flags] topic
     And I stop the command started last
     Then the output should contain "hello-world"
 
-  Scenario: prints message from a specific partition with `--partition` flag
+  Scenario: kafkatail --bootstrap_servers=localhost:9093 --partition=1 test-topic
+    prints message from a specific partition with `--partition` flag
+
     Given "test-topic" is present on kafka-broker "localhost:9093" with 2 partition
     And I wait 2.0 seconds for a command to start up
     When I run `kafkatail --bootstrap_servers=localhost:9093 --partition=1 test-topic` in background
@@ -44,3 +52,25 @@ Feature: kafkatail [flags] topic
     ============Partition: 1, Offset: 0==========
     hello-world
     """
+
+  Scenario: kafkatail --bootstrap_servers=localhost:9093 --group_id=test-group test-topic
+    prints messages from all partition with `--group_id` flag
+
+    Given "test-topic" is present on kafka-broker "localhost:9093" with 2 partition
+    And I wait 3.0 seconds for a command to start up
+    When I run `kafkatail --bootstrap_servers=localhost:9093 --group_id=test-group test-topic` in background
+    And "hello-world" message is pushed to "test-topic" on partition 1
+    And "foo-bar" message is pushed to "test-topic" on partition 0
+    Then the output should contain:
+    """
+    ====================Message====================
+    ============Partition: 1, Offset: 0==========
+    hello-world
+    """
+    And the output should contain:
+    """
+    ====================Message====================
+    ============Partition: 0, Offset: 0==========
+    foo-bar
+    """
+
