@@ -25,8 +25,22 @@ Feature: kafkatail [flags] topic
     """
 
   Scenario: prints message when pushed to topic
-    Given "test-topic" is present on kafka-broker "localhost:9093"
+    Given "test-topic" is present on kafka-broker "localhost:9093" with 1 partition
+    And I wait 2.0 seconds for a command to start up
     When I run `kafkatail --bootstrap_servers=localhost:9093 test-topic` in background
-    And "hello-world" message is pushed to "test-topic"
+    And "hello-world" message is pushed to "test-topic" on partition 0
     And I stop the command started last
     Then the output should contain "hello-world"
+
+  Scenario: prints message from a specific partition with `--partition` flag
+    Given "test-topic" is present on kafka-broker "localhost:9093" with 2 partition
+    And I wait 2.0 seconds for a command to start up
+    When I run `kafkatail --bootstrap_servers=localhost:9093 --partition=1 test-topic` in background
+    And "hello-world" message is pushed to "test-topic" on partition 1
+    And I stop the command started last
+    Then the output should contain:
+    """
+    ====================Message====================
+    ============Partition: 1, Offset: 0==========
+    hello-world
+    """
