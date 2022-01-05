@@ -74,3 +74,12 @@ Feature: kafkatail [flags] topic
     foo-bar
     """
 
+  Scenario: kafkatail -b=localhost:9093 test-topic
+    using shorthand flag for `bootstrap_servers` will yield same result as with full flag name
+
+    Given "test-topic" is present on kafka-broker "localhost:9093" with 1 partition
+    And I wait 2.0 seconds for a command to start up
+    When I run `kafkatail -b=localhost:9093 test-topic` in background
+    And "hello-world" message is pushed to "test-topic" on partition 0
+    And I stop the command started last
+    Then the output should contain "hello-world"
