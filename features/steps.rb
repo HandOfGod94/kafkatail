@@ -11,3 +11,8 @@ And '{string} message is pushed to {string} on partition {int}' do |message, top
   kafka.deliver_message(message, topic: topic, partition: partition)
 end
 
+And 'starwars Human proto message is pushed to {string}' do |topic|
+  human = Starwars::Human.new(homePlanet: "earth")
+  seralized = Starwars::Human.encode(human)
+  kafka.deliver_message(seralized, topic: topic)
+end

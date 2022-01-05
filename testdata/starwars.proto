@@ -33,7 +33,7 @@ message Human {
   string homePlanet = 2;
   message Height {
     LengthUnit unit = 1;
-	float value = 2;
+    float value = 2;
   }
   Height height = 3;
   float mass = 4;
@@ -86,7 +86,7 @@ message Starship {
   string name = 2;
   message Length {
     LengthUnit unit = 1;
-	float value = 2;
+    float value = 2;
   }
   Length length = 3;
   message Row {
