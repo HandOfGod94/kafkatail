@@ -11,7 +11,7 @@ Feature: kafkatail [flags] topic
     topic is required args
 
     When I run `kafkatail`
-    Then the exit status should be 1
+    Then the exit status should not be 0
     And the output should contain:
     """
     Error: requires at least 1 arg(s)
@@ -22,7 +22,7 @@ Feature: kafkatail [flags] topic
     `bootstrap_servers` flag is required
 
     When I run `kafkatail test-topic`
-    Then the exit status should be 1
+    Then the exit status should not be 0
     And the output should contain:
     """
     Error: required flag(s) "bootstrap_servers" not set
@@ -57,7 +57,7 @@ Feature: kafkatail [flags] topic
     prints messages from all partition with `--group_id` flag
 
     Given "test-topic" is present on kafka-broker "localhost:9093" with 2 partition
-    And I wait 3.0 seconds for a command to start up
+    And I wait 5.0 seconds for a command to start up
     When I run `kafkatail --bootstrap_servers=localhost:9093 --group_id=test-group test-topic` in background
     And "hello-world" message is pushed to "test-topic" on partition 1
     And "foo-bar" message is pushed to "test-topic" on partition 0

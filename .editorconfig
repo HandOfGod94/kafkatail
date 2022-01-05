@@ -11,8 +11,6 @@ indent_size = 4
 [Makefile]
 indent_style = tab
 
-[Makefile]
-
 [*.{go,mk}]
 indent_style = tab
 
