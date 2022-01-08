@@ -11,17 +11,19 @@
 CLI app to tail kafka logs on console from any topic having messages in any format: Plaintext, proto, ...
 
 **Contents**  
-- [Installation](#installation)
-  - [MacOS using `homebrew`](#macos-using-homebrew)
-  - [Linux using `snap`](#linux-using-snap)
-  - [Windows using `scoop`](#windows-using-scoop)
-  - [Go Toolchain](#go-toolchain)
-  - [Github Releases](#github-releases)
-- [QuickStart](#quickstart)
-- [Usage](#usage)
-- [Examples](#examples)
-- [Known Limitation](#known-limitation)
-- [Development](#development)
+- [Kafkatail](#kafkatail)
+  - [Overview](#overview)
+    - [Installation](#installation)
+      - [MacOS using `homebrew`](#macos-using-homebrew)
+      - [Linux using `snap`](#linux-using-snap)
+      - [Windows using `scoop`](#windows-using-scoop)
+      - [Go Toolchain](#go-toolchain)
+      - [Github Releases](#github-releases)
+    - [QuickStart](#quickstart)
+    - [Usage](#usage)
+    - [Examples](#examples)
+    - [Known Limitation](#known-limitation)
+    - [Development](#development)
 
 ### Installation
 
@@ -124,6 +126,7 @@ kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafka-consume-goru
 
 ### Development
 * Minimum go version: `1.16`
+* Ruby version: `2.7.1` (for running cucumber-tests)
 
 ```sh
 # to run dev checks and create binary
@@ -133,7 +136,12 @@ make
 make test
 
 # to run integration tests
-make integration-tests
+# it requires ruby to be installed
+# download cucumber dependencies
+make cucumber-setup
+
+# run cucumber tests
+make cucumber-test
 
 # to clean up integration test env
 make clean-integration
