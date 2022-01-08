@@ -142,7 +142,4 @@ make cucumber-setup
 
 # run cucumber tests
 make cucumber-test
-
-# to clean up integration test env
-make clean-integration
 ```

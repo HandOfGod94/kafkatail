@@ -13,12 +13,6 @@ quality-check:
 	gocyclo -over 15 -ignore "testdata/" .
 	gocognit -over 15 .
 
-clean-integration:
-	docker compose stop
-	docker compose rm -f -v
-	docker volume rm -f kafkatail_kafka_data kafkatail_zookeeper_data
-	docker compose up -d
-
 test:
 	go test -timeout 60s -cover -count=1 -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
