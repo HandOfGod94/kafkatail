@@ -27,6 +27,7 @@ var (
 	includePaths       []string
 	messageType        string
 	partition          = PartitionFlag{value: mo.Right[int]("all")}
+	schemaFile         string
 )
 
 const appVersion = "dev"
@@ -70,6 +71,10 @@ var rootCmd = &cobra.Command{
 			cmd.MarkFlagRequired("proto_file")
 			cmd.MarkFlagRequired("include_paths")
 			cmd.MarkFlagRequired("message_type")
+		}
+
+		if formatFlag.Value.String() == "avro" {
+			cmd.MarkFlagRequired("schema_file")
 		}
 
 		parsedFromDateTime, err = time.Parse(time.RFC3339, fromDateTime)
@@ -128,14 +133,14 @@ func init() {
 	rootCmd.Flags().StringVar(&fromDateTime, "from_datetime", zeroTime, "tail from specific past datetime in RFC3339 format")
 	rootCmd.Flags().StringVar(&messageType, "message_type", "", "proto message `type` to use for decoding . Required for `wire_format=proto`")
 	rootCmd.Flags().StringSliceVar(&includePaths, "include_paths", []string{}, "`include_paths` containing dependencies of proto. Required for `wire_format=proto`")
-	rootCmd.Flags().StringVar(&protoFile, "proto_file", "", "`proto_file` to be used for decoding kafka message. Required for `wire_format=proto`")
+	rootCmd.Flags().StringVar(&protoFile, "proto_file", "", "`proto_file` to use for decoding kafka message. Required for `wire_format=proto`")
+	rootCmd.Flags().StringVar(&schemaFile, "schema_file", "", "`schema_file` to use for decoding avro messages. Required for `wire_format=avro`")
 	rootCmd.Flags().Var(enumflag.New(&wireForamt, "wire_format", wire.FormatIDs, enumflag.EnumCaseSensitive),
 		"wire_format",
 		"Wire format of messages in topic",
 	)
 
 	rootCmd.Flags().Lookup("wire_format").NoOptDefVal = "plaintext"
-
 	rootCmd.MarkFlagRequired("bootstrap_servers")
 }
 
