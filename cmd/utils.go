@@ -39,6 +39,8 @@ func decoderFactory(wireFormat wire.Format) consumer.WireDecoder {
 		return wire.NewPlaintextDecoder()
 	case wire.Proto:
 		return wire.NewProtoDecoder(protoFile, messageType, includePaths)
+	case wire.Avro:
+		return wire.NewAvroDecoder(schemaFile)
 	default:
 		log.Fatalf("unsupported message type. received: %v, supported: %v", messageType, "plaintext, proto")
 		return nil

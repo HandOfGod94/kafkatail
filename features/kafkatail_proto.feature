@@ -16,7 +16,7 @@ Feature: kafkatail --wire_format=proto test-topic
     Error: required flag(s) "include_paths", "message_type", "proto_file" not set
     """
 
-  Scenario: kafkatail -b=localhost:9093 --wire_format=proto --include_paths=./testdata --proto_file=starwars.proto --message_type=Human test-topic
+  Scenario: kafkatail -b=localhost:9093 --wire_format=proto --include_paths=../../testdata --proto_file=starwars.proto --message_type=Human test-topic
 
   Prints plain text message after decoding protobuf message
 
