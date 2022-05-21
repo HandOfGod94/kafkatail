@@ -75,12 +75,29 @@ var rootCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		topic := args[0]
-		konsumer, err := consumerFactory(topic, groupID, parsedFromDateTime)
+		cf := consumer.NewFactory(
+			bootstrapServers,
+			groupID,
+			topic,
+			partition,
+			offset,
+			parsedFromDateTime,
+			wireForamt,
+			protoFile,
+			messageType,
+			includePaths,
+		)
+
+		konsumer, err := cf.CreateConsumer()
 		if err != nil {
 			return err
 		}
 
-		resultChan := konsumer.Consume(context.Background(), decoderFactory(wireForamt))
+		decoder, err := cf.CreateDecoder()
+		if err != nil {
+			return err
+		}
+		resultChan := konsumer.Consume(context.Background(), decoder)
 		exitCode := <-receiveMessages(resultChan)
 
 		konsumer.Close()

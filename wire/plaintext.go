@@ -1,11 +1,11 @@
 package wire
 
-type plaintextDecoder struct{}
+type PlaintextDecoder struct{}
 
-func NewPlaintextDecoder() *plaintextDecoder {
-	return &plaintextDecoder{}
+func NewPlaintextDecoder() *PlaintextDecoder {
+	return &PlaintextDecoder{}
 }
 
-func (ptd *plaintextDecoder) Decode(raw []byte) (string, error) {
+func (ptd *PlaintextDecoder) Decode(raw []byte) (string, error) {
 	return string(raw), nil
 }

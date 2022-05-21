@@ -11,17 +11,17 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 )
 
-type protoDecoder struct {
+type ProtoDecoder struct {
 	includes    []string
 	protoFile   string
 	messageType string
 }
 
-func NewProtoDecoder(protoFile, messageType string, includes []string) *protoDecoder {
-	return &protoDecoder{includes, protoFile, messageType}
+func NewProtoDecoder(protoFile, messageType string, includes []string) *ProtoDecoder {
+	return &ProtoDecoder{includes, protoFile, messageType}
 }
 
-func (pd *protoDecoder) Decode(raw []byte) (string, error) {
+func (pd *ProtoDecoder) Decode(raw []byte) (string, error) {
 	parser := protoparse.Parser{
 		ImportPaths:      pd.includes,
 		InferImportPaths: true,
