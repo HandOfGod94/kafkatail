@@ -1,14 +1,14 @@
 package consumer
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/segmentio/kafka-go"
 )
+
+var _ ClosableConsumer = (*GroupConsumer)(nil)
 
 type GroupConsumer struct {
 	reader *kafka.Reader
@@ -39,31 +39,7 @@ func NewGroupConsumer(opts GroupConsumerOpts) (*GroupConsumer, error) {
 }
 
 func (gc *GroupConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
-	resultChan := make(chan Result)
-
-	go func(ctx context.Context) {
-		for {
-			m, err := gc.reader.ReadMessage(ctx)
-			if err != nil {
-				resultChan <- Result{Err: err}
-				return
-			}
-
-			value, err := decoder.Decode(m.Value)
-			if err != nil {
-				log.Printf("failed to decode message. error: %v", err)
-				resultChan <- Result{Err: err}
-				return
-			}
-			msg := bytes.NewBufferString("")
-			fmt.Fprintln(msg, "====================Message====================")
-			fmt.Fprintf(msg, "============Partition: %v, Offset: %v==========\n", m.Partition, m.Offset)
-			fmt.Fprintln(msg, value)
-			resultChan <- Result{Message: msg.String()}
-		}
-	}(ctx)
-
-	return resultChan
+	return printMsgs(ctx, gc.reader, decoder)
 }
 
 func (gc *GroupConsumer) Close() error {

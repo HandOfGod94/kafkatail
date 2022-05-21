@@ -25,4 +25,5 @@ Feature: kafkatail --wire_format=proto test-topic
     When I run `kafkatail -b=localhost:9093 --wire_format=proto --include_paths=../../testdata --proto_file=starwars.proto --message_type=Human test-topic` in background
     And starwars Human proto message is pushed to "test-topic"
     And I stop the command started last
-    Then the output should contain 'homePlanet: "earth"'
+    Then the output should contain 'homePlanet:'
+    And the output should contain '"earth"'
