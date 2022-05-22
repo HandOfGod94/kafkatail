@@ -18,7 +18,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.18
       - name: Get latest release tag
         run: echo "RELEASE_VERSION=`echo $(git describe --abbrev=0)`" >> $GITHUB_ENV
       - name: Install snapcraft deps
