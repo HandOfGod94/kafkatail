@@ -11,6 +11,7 @@ import (
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
+	"github.com/samber/mo"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag"
 )
@@ -20,12 +21,12 @@ var (
 	groupID            string
 	wireForamt         wire.Format
 	offset             int64
-	partition          int
 	fromDateTime       string
 	parsedFromDateTime time.Time
 	protoFile          string
 	includePaths       []string
 	messageType        string
+	partition          = PartitionFlag{value: mo.Right[int]("all")}
 )
 
 const appVersion = "dev"
@@ -79,7 +80,7 @@ var rootCmd = &cobra.Command{
 			bootstrapServers,
 			groupID,
 			topic,
-			partition,
+			partition.Get(),
 			offset,
 			parsedFromDateTime,
 			wireForamt,
@@ -118,7 +119,7 @@ func init() {
 	rootCmd.Flags().StringSliceVarP(&bootstrapServers, "bootstrap_servers", "b", []string{}, "list of kafka `bootstrap_servers` separated by comma")
 	rootCmd.Flags().StringVar(&groupID, "group_id", "", "[Optional] kafka consumer `group_id` to be used for subscribing to topic")
 	rootCmd.Flags().Int64Var(&offset, "offset", -1, "kafka offset to start consuming from. Possible Values: -1=latest, -2=earliest, n=nth offset")
-	rootCmd.Flags().IntVar(&partition, "partition", 0, "kafka partition to consume from")
+	rootCmd.Flags().Var(&partition, "partition", `kafka partition to consume from. Can be int(0,1,2,...) or "all"`)
 	rootCmd.Flags().StringVar(&fromDateTime, "from_datetime", zeroTime, "tail from specific past datetime in RFC3339 format")
 	rootCmd.Flags().StringVar(&messageType, "message_type", "", "proto message `type` to use for decoding . Required for `wire_format=proto`")
 	rootCmd.Flags().StringSliceVar(&includePaths, "include_paths", []string{}, "`include_paths` containing dependencies of proto. Required for `wire_format=proto`")

@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/go-playground/validator/v10"
@@ -39,6 +40,10 @@ func NewMultiplePartitionConsumer(ctx context.Context, opts MultiplePartitionCon
 			Topic:     opts.Topic,
 			Partition: partition.ID,
 		})
+
+		if err := readers[i].SetOffset(opts.Offset); err != nil {
+			return nil, fmt.Errorf("failed to set offset for partition %d. error: %w", partition.ID, err)
+		}
 	}
 
 	return &MultiplePartitionConsumer{readers}, nil

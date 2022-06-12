@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/handofgod94/kafkatail/wire"
+	"github.com/samber/mo"
 )
 
 type ClosableConsumer interface {
@@ -22,7 +23,7 @@ type factory struct {
 	bootstrapServers []string
 	groupID          string
 	topic            string
-	partition        int
+	partition        mo.Either[int, string]
 	offset           int64
 	fromDateTime     time.Time
 	wireFormat       wire.Format
@@ -35,7 +36,7 @@ func NewFactory(
 	bootstrapServers []string,
 	groupID string,
 	topic string,
-	partition int,
+	partition mo.Either[int, string],
 	offset int64,
 	fromDateTime time.Time,
 	wireFormat wire.Format,
@@ -64,15 +65,27 @@ func (o *factory) CreateConsumer() (ClosableConsumer, error) {
 			GroupID:          o.groupID,
 			Topic:            o.topic,
 		})
-	} else {
-		return NewPartitionConsumer(context.Background(), PartitionConsumerOpts{
+	}
+
+	if o.isMultiPartition() {
+		return NewMultiplePartitionConsumer(context.Background(), MultiplePartitionConsumerOpts{
 			BootstrapServers: o.bootstrapServers,
 			Topic:            o.topic,
-			Partition:        o.partition,
 			Offset:           o.offset,
-			FromDateTime:     o.fromDateTime,
 		})
 	}
+
+	return NewPartitionConsumer(context.Background(), PartitionConsumerOpts{
+		BootstrapServers: o.bootstrapServers,
+		Topic:            o.topic,
+		Partition:        o.partition.MustLeft(),
+		Offset:           o.offset,
+		FromDateTime:     o.fromDateTime,
+	})
+}
+
+func (o *factory) isMultiPartition() bool {
+	return o.partition.IsRight()
 }
 
 func (o *factory) CreateDecoder() (WireDecoder, error) {

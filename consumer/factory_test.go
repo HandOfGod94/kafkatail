@@ -6,6 +6,7 @@ import (
 
 	"github.com/handofgod94/kafkatail/consumer"
 	"github.com/handofgod94/kafkatail/wire"
+	"github.com/samber/mo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +14,7 @@ type factoryargs struct {
 	bootstrapServers []string
 	groupID          string
 	topic            string
-	partition        int
+	partition        mo.Either[int, string]
 	offset           int64
 	fromDateTime     time.Time
 	wireFormat       wire.Format
@@ -31,10 +32,10 @@ func TestCreateConsumer(t *testing.T) {
 		{
 			desc: "creates GroupConsumeer when groupID is present",
 			factory: factoryargs{
-				bootstrapServers: []string{"localhost:8081"},
+				bootstrapServers: []string{"localhost:9093"},
 				groupID:          "groupID",
 				topic:            "test-topic",
-				partition:        0,
+				partition:        mo.Left[int, string](0),
 				offset:           10,
 				fromDateTime:     time.Time{},
 				wireFormat:       wire.PlainText,
@@ -45,11 +46,26 @@ func TestCreateConsumer(t *testing.T) {
 			want: &consumer.GroupConsumer{},
 		},
 		{
-			desc: "creates partitions consumer when groupID is absent",
+			desc: "creates MultiplePartitionConsumer when partition is `all`",
 			factory: factoryargs{
-				bootstrapServers: []string{"localhost:8081"},
+				bootstrapServers: []string{"localhost:9093"},
 				topic:            "test-topic",
-				partition:        0,
+				partition:        mo.Right[int]("all"),
+				offset:           10,
+				fromDateTime:     time.Time{},
+				wireFormat:       wire.PlainText,
+				protoFile:        "foo.proto",
+				messageType:      "Bar",
+				includePaths:     []string{"./hello"},
+			},
+			want: &consumer.MultiplePartitionConsumer{},
+		},
+		{
+			desc: "creates partitions consumer otherwise",
+			factory: factoryargs{
+				bootstrapServers: []string{"localhost:9093"},
+				topic:            "test-topic",
+				partition:        mo.Left[int, string](0),
 				offset:           10,
 				fromDateTime:     time.Time{},
 				wireFormat:       wire.PlainText,
@@ -91,10 +107,10 @@ func TestWireDecoder(t *testing.T) {
 		{
 			desc: "creates plain text decoder for plaintext wireFormat",
 			factory: factoryargs{
-				bootstrapServers: []string{"localhost:8081"},
+				bootstrapServers: []string{"localhost:9093"},
 				groupID:          "groupID",
 				topic:            "test-topic",
-				partition:        0,
+				partition:        mo.Left[int, string](0),
 				offset:           10,
 				fromDateTime:     time.Time{},
 				wireFormat:       wire.PlainText,
@@ -107,10 +123,10 @@ func TestWireDecoder(t *testing.T) {
 		{
 			desc: "creates protodecoder for proto wireformat",
 			factory: factoryargs{
-				bootstrapServers: []string{"localhost:8081"},
+				bootstrapServers: []string{"localhost:9093"},
 				groupID:          "groupID",
 				topic:            "test-topic",
-				partition:        0,
+				partition:        mo.Left[int, string](0),
 				offset:           10,
 				fromDateTime:     time.Time{},
 				wireFormat:       wire.Proto,
