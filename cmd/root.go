@@ -58,6 +58,11 @@ var rootCmd = &cobra.Command{
 
 	# tail from multiple partitions, using group_id
 	kafkatail --bootstrap_servers=localhost:9093 --group_id=myfoo kafka-consume-gorup-id-int-test
+
+	# tail from multiple partitions WITHOUT group_id
+	kafkatail --bootstrap_servers=localhost:9093 --partition=all kafka-consume-gorup-id-int-test
+	# or simply
+	kafkatail --bootstrap_servers=localhost:9093 kafka-consume-gorup-id-int-test
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		formatFlag := cmd.Flags().Lookup("wire_format")

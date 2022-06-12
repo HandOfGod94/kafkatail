@@ -1,0 +1,4 @@
+kind: Added
+body: ability to tail from multiple partitions without setting group_id, using `--partition=all`
+  flag
+time: 2022-06-12T22:50:22.249766+05:30
