@@ -50,12 +50,12 @@ scoop install kafkatail
 #### Go Toolchain
   + For Go 1.16 or higher
     ```sh
-    go install github.com/handofgod94/kafkatail@v0.1.5
+    go install github.com/handofgod94/kafkatail@v0.2.0
     ```
 
   + For go version <= 1.15
     ```sh
-    GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.1.5
+    GO111MODULE=on go get github.com/handofgod94/kafkatail@v0.2.0
     ```
     The go binary will be installed in `$GOPATH/bin`
 
@@ -67,7 +67,7 @@ scoop install kafkatail
 
 `$ kafkatail --version`
 ```
-kafkatail version 0.1.5
+kafkatail version 0.2.0
 ```
 
 ### Usage
