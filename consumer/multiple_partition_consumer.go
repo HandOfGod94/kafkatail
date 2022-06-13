@@ -10,21 +10,21 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-var _ ClosableConsumer = (*MultiplePartitionConsumer)(nil)
+var _ ClosableConsumer = (*MultiPartitionConsumer)(nil)
 
-type MultiplePartitionConsumer struct {
+type MultiPartitionConsumer struct {
 	readers []*kafka.Reader
 }
 
-type MultiplePartitionConsumerOpts struct {
+type MultiPartitionConsumerOpts struct {
 	BootstrapServers []string `validate:"required"`
 	Topic            string   `validate:"required"`
 	Offset           int64
 	FromDateTime     time.Time
 }
 
-func NewMultiplePartitionConsumer(ctx context.Context, opts MultiplePartitionConsumerOpts) (*MultiplePartitionConsumer, error) {
-	log.Printf("starting multiple partition consumer with config: %+v", opts)
+func NewMultiPartitionConsumer(ctx context.Context, opts MultiPartitionConsumerOpts) (*MultiPartitionConsumer, error) {
+	log.Printf("starting consumer consuming from all partitions with config: %+v", opts)
 	validate := validator.New()
 	if errs := validate.Struct(opts); errs != nil {
 		return nil, errs
@@ -48,10 +48,10 @@ func NewMultiplePartitionConsumer(ctx context.Context, opts MultiplePartitionCon
 		}
 	}
 
-	return &MultiplePartitionConsumer{readers}, nil
+	return &MultiPartitionConsumer{readers}, nil
 }
 
-func (opts *MultiplePartitionConsumerOpts) Paritions(ctx context.Context) ([]kafka.Partition, error) {
+func (opts *MultiPartitionConsumerOpts) Paritions(ctx context.Context) ([]kafka.Partition, error) {
 	conn, err := kafka.DialContext(ctx, "tcp", opts.BootstrapServers[0])
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (opts *MultiplePartitionConsumerOpts) Paritions(ctx context.Context) ([]kaf
 	return conn.ReadPartitions(opts.Topic)
 }
 
-func (mpc *MultiplePartitionConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
+func (mpc *MultiPartitionConsumer) Consume(ctx context.Context, decoder WireDecoder) <-chan Result {
 	out := make(chan Result)
 
 	for _, reader := range mpc.readers {
@@ -74,6 +74,6 @@ func (mpc *MultiplePartitionConsumer) Consume(ctx context.Context, decoder WireD
 	return out
 }
 
-func (mpc *MultiplePartitionConsumer) Close() error {
+func (mpc *MultiPartitionConsumer) Close() error {
 	return nil
 }

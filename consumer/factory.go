@@ -68,7 +68,7 @@ func (o *factory) CreateConsumer() (ClosableConsumer, error) {
 	}
 
 	if o.isMultiPartition() {
-		return NewMultiplePartitionConsumer(context.Background(), MultiplePartitionConsumerOpts{
+		return NewMultiPartitionConsumer(context.Background(), MultiPartitionConsumerOpts{
 			BootstrapServers: o.bootstrapServers,
 			Topic:            o.topic,
 			Offset:           o.offset,
