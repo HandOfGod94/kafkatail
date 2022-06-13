@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type MultipleParitionTestSuite struct {
+type MultiPartitionTestSuite struct {
 	suite.Suite
-	opts consumer.MultiplePartitionConsumerOpts
+	opts consumer.MultiPartitionConsumerOpts
 }
 
-func (suite *MultipleParitionTestSuite) SetupSuite() {
-	suite.opts = consumer.MultiplePartitionConsumerOpts{
+func (suite *MultiPartitionTestSuite) SetupSuite() {
+	suite.opts = consumer.MultiPartitionConsumerOpts{
 		BootstrapServers: []string{"localhost:9093"},
 		Topic:            "kafkatail-test-topic",
 		Offset:           kafka.FirstOffset,
@@ -33,11 +33,11 @@ func (suite *MultipleParitionTestSuite) SetupSuite() {
 	})
 }
 
-func (suite *MultipleParitionTestSuite) TearDownSuite() {
+func (suite *MultiPartitionTestSuite) TearDownSuite() {
 	kafkatest.DeleteTopic(context.Background(), suite.opts.Topic)
 }
 
-func (suite *MultipleParitionTestSuite) TestListPartitions_FetchesAllAvailablePartitions() {
+func (suite *MultiPartitionTestSuite) TestListPartitions_FetchesAllAvailablePartitions() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -46,11 +46,11 @@ func (suite *MultipleParitionTestSuite) TestListPartitions_FetchesAllAvailablePa
 	assert.Equal(suite.T(), 2, len(partitions))
 }
 
-func (suite *MultipleParitionTestSuite) TestListPartitions_RetrunsErrorForInvalidConfig() {
+func (suite *MultiPartitionTestSuite) TestListPartitions_RetrunsErrorForInvalidConfig() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	opts := consumer.MultiplePartitionConsumerOpts{
+	opts := consumer.MultiPartitionConsumerOpts{
 		BootstrapServers: []string{"foobar:9093"},
 		Topic:            "kafkatail-test-topic",
 		Offset:           kafka.FirstOffset,
@@ -62,11 +62,11 @@ func (suite *MultipleParitionTestSuite) TestListPartitions_RetrunsErrorForInvali
 	assert.Empty(suite.T(), partitions)
 }
 
-func (suite *MultipleParitionTestSuite) TestConsume() {
+func (suite *MultiPartitionTestSuite) TestConsume() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	gc, _ := consumer.NewMultiplePartitionConsumer(ctx, suite.opts)
+	gc, _ := consumer.NewMultiPartitionConsumer(ctx, suite.opts)
 	defer gc.Close()
 
 	resultChan := gc.Consume(ctx, wire.NewPlaintextDecoder())
@@ -89,5 +89,5 @@ func (suite *MultipleParitionTestSuite) TestConsume() {
 }
 
 func TestListPartitionSuite(t *testing.T) {
-	suite.Run(t, new(MultipleParitionTestSuite))
+	suite.Run(t, new(MultiPartitionTestSuite))
 }
