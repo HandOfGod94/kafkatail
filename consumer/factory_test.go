@@ -46,22 +46,7 @@ func TestCreateConsumer(t *testing.T) {
 			want: &consumer.GroupConsumer{},
 		},
 		{
-			desc: "creates MultiplePartitionConsumer when partition is `all`",
-			factory: factoryargs{
-				bootstrapServers: []string{"localhost:9093"},
-				topic:            "test-topic",
-				partition:        mo.Right[int]("all"),
-				offset:           10,
-				fromDateTime:     time.Time{},
-				wireFormat:       wire.PlainText,
-				protoFile:        "foo.proto",
-				messageType:      "Bar",
-				includePaths:     []string{"./hello"},
-			},
-			want: &consumer.MultiplePartitionConsumer{},
-		},
-		{
-			desc: "creates partitions consumer otherwise",
+			desc: "creates partitions consumer with specific partition number seeked",
 			factory: factoryargs{
 				bootstrapServers: []string{"localhost:9093"},
 				topic:            "test-topic",
