@@ -72,6 +72,7 @@ func (o *factory) CreateConsumer() (ClosableConsumer, error) {
 			BootstrapServers: o.bootstrapServers,
 			Topic:            o.topic,
 			Offset:           o.offset,
+			FromDateTime:     o.fromDateTime,
 		})
 	}
 

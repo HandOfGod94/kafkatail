@@ -54,6 +54,7 @@ func (suite *MultipleParitionTestSuite) TestListPartitions_RetrunsErrorForInvali
 		BootstrapServers: []string{"foobar:9093"},
 		Topic:            "kafkatail-test-topic",
 		Offset:           kafka.FirstOffset,
+		FromDateTime:     time.Time{},
 	}
 
 	partitions, err := opts.Paritions(ctx)

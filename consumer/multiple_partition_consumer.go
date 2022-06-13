@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/segmentio/kafka-go"
@@ -19,6 +20,7 @@ type MultiplePartitionConsumerOpts struct {
 	BootstrapServers []string `validate:"required"`
 	Topic            string   `validate:"required"`
 	Offset           int64
+	FromDateTime     time.Time
 }
 
 func NewMultiplePartitionConsumer(ctx context.Context, opts MultiplePartitionConsumerOpts) (*MultiplePartitionConsumer, error) {
@@ -41,8 +43,8 @@ func NewMultiplePartitionConsumer(ctx context.Context, opts MultiplePartitionCon
 			Partition: partition.ID,
 		})
 
-		if err := readers[i].SetOffset(opts.Offset); err != nil {
-			return nil, fmt.Errorf("failed to set offset for partition %d. error: %w", partition.ID, err)
+		if err := seekToOffset(ctx, readers[i], opts.Offset, opts.FromDateTime); err != nil {
+			return nil, fmt.Errorf("failed to seek offset for partition %d. error: %w", partition.ID, err)
 		}
 	}
 
