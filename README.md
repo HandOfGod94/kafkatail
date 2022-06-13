@@ -67,7 +67,7 @@ scoop install kafkatail
 
 `$ kafkatail --version`
 ```
-kafkatail version 0.2.0
+kafkatail version dev
 ```
 
 ### Usage
