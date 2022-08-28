@@ -1,4 +1,4 @@
-version: "2"
+version: "3.8"
 
 services:
   zookeeper:
@@ -9,6 +9,13 @@ services:
       - "zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+    healthcheck:
+      test: zkServer.sh status
+      interval: 10s
+      timeout: 60s
+      retries: 4
+      start_period: 10s
+
   kafka:
     image: docker.io/bitnami/kafka:2
     ports:
@@ -24,7 +31,8 @@ services:
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
 
 volumes:
   zookeeper_data:
