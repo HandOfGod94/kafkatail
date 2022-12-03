@@ -38,6 +38,24 @@ Feature: kafkatail [flags] topic
     And I stop the command started last
     Then the output should contain "hello-world"
 
+  Scenario: kafkatail --bootstrap_servers=localhost:9093 test-topic
+    prints message with header when pushed to topic
+
+    Given "test-topic" is present on kafka-broker "localhost:9093" with 1 partition
+    And I wait 2.0 seconds for a command to start up
+    When I run `kafkatail --bootstrap_servers=localhost:9093 test-topic` in background
+    And "hello-world" message is pushed to "test-topic" on partition 0 with header key "foo" and header value "bar"
+    And I stop the command started last
+    Then the output should contain:
+    """
+    ====================Message====================
+    ============Partition: 0, Offset: 0==========
+    ====================Header====================
+    foo: bar
+    ====================Payload====================
+    hello-world
+    """
+
   Scenario: kafkatail --bootstrap_servers=localhost:9093 --partition=1 test-topic
     prints message from a specific partition with `--partition` flag
 
@@ -50,6 +68,8 @@ Feature: kafkatail [flags] topic
     """
     ====================Message====================
     ============Partition: 1, Offset: 0==========
+    ====================Header====================
+    ====================Payload====================
     hello-world
     """
 
@@ -65,12 +85,16 @@ Feature: kafkatail [flags] topic
     """
     ====================Message====================
     ============Partition: 1, Offset: 0==========
+    ====================Header====================
+    ====================Payload====================
     hello-world
     """
     And the output should contain:
     """
     ====================Message====================
     ============Partition: 0, Offset: 0==========
+    ====================Header====================
+    ====================Payload====================
     foo-bar
     """
 
@@ -86,12 +110,16 @@ Feature: kafkatail [flags] topic
     """
     ====================Message====================
     ============Partition: 1, Offset: 0==========
+    ====================Header====================
+    ====================Payload====================
     hello-world
     """
     And the output should contain:
     """
     ====================Message====================
     ============Partition: 0, Offset: 0==========
+    ====================Header====================
+    ====================Payload====================
     foo-bar
     """
 
