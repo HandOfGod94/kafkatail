@@ -1,0 +1,137 @@
+{
+  "namespace": "starwars",
+  "type": "record",
+  "name": "Starwars",
+  "fields": [
+    {
+      "name": "Episode",
+      "type": "enum",
+      "symbols": ["NEWHOPE", "EMPIRE", "JEDIA"]
+    },
+    {
+      "name": "Species",
+      "type": "enum",
+      "symbols": ["HUMAN", "DROID"]
+    },
+    {
+      "name": "Character",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "int"},
+        {"name": "name", "type": "string"},
+        {"name": "friends", "type": "array", "items": "Character"},
+        {"name": "appearsIn", "type": "array", "items": "Episode"}
+      ]
+    },
+    {
+      "name": "LengthUnit",
+      "type": "enum",
+      "symbols": ["METER", "FOOT"]
+    },
+        {
+      "name": "Row",
+      "type": "record",
+      "fields": [
+        {"name": "values", "type": "array", "items": "float"}
+      ]
+    },
+    {
+      "name": "Starship",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "int"},
+        {"name": "name", "type": "string"},
+        {
+          "name": "length",
+          "type": "record",
+          "fields": [
+            {"name": "unit", "type": "LengthUnit"},
+            {"name": "value", "type": "float"}
+          ]
+        },
+        {"name": "coordinates", "type": "array", "items": "Row"}
+      ]
+    },
+    {
+      "name": "Human",
+      "type": "record",
+      "fields": [
+        {"name": "character", "type": "Character"},
+        {"name": "homePlanet", "type": "string"},
+        {
+          "name": "height",
+          "type": "record",
+          "fields": [
+            {"name": "unit", "type": "LengthUnit"},
+            {"name": "value", "type": "float"}
+          ]
+        },
+        {"name": "mass", "type": "float"},
+        {"name": "starship", "type": "array", "items": "Starship"}
+      ]
+    },
+    {
+      "name": "Droid",
+      "type": "record",
+      "fields": [
+        {"name": "character", "type": "Character"},
+        {"name": "primaryFunction", "type": "string"}
+      ]
+    },
+    {
+      "name": "FriendsEdge",
+      "type": "record",
+      "fields": [
+        {"name": "cursor", "type": "int"},
+        {"name": "node", "type": "Character"}
+      ]
+    },
+    {
+      "name": "PageInfo",
+      "type": "record",
+      "fields": [
+        {"name": "startCursor", "type": "int"},
+        {"name": "endCursor", "type": "int"},
+        {"name": "hasNextPage", "type": "boolean"}
+      ]
+    },
+    {
+      "name": "FriendsConnection",
+      "type": "record",
+      "fields": [
+        {"name": "edges", "type": "array", "items": "FriendsEdge"},
+        {"name": "totalCount", "type": "int"},
+        {"name": "friends", "type": "array", "items": "Character"},
+        {"name": "pageinfo", "type": "PageInfo"}
+      ]
+    },
+
+    {
+      "name": "Review",
+      "type": "record",
+      "fields": [
+        {"name": "episode", "type": "Episode"},
+        {"name": "stars", "type": "int"},
+        {"name": "commentary", "type": "string"}
+      ]
+    },
+    {
+      "name": "ColourInput",
+      "type": "record",
+      "fields": [
+        {"name": "red", "type": "int"},
+        {"name": "green", "type": "int"},
+        {"name": "blue", "type": "int"}
+      ]
+    },
+    {
+      "name": "ReviewInput",
+      "type": "record",
+      "fields": [
+        {"name": "stars", "type": "int"},
+        {"name": "commentary", "type": "string"},
+        {"name": "favouriteColour", "type": "ColourInput"}
+      ]
+    }
+  ]
+}
