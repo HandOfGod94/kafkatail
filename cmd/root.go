@@ -29,7 +29,7 @@ var (
 	partition          = PartitionFlag{value: mo.Right[int]("all")}
 )
 
-const appVersion = "0.2.0"
+const appVersion = "dev"
 
 type status = int
 
