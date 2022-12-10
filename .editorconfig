@@ -14,7 +14,7 @@ indent_style = tab
 [*.{go,mk}]
 indent_style = tab
 
-[*.{yml,feature,rb}]
+[*.{yml,feature,rb,proto,avro}]
 indent_size = 2
 
 [*.md]

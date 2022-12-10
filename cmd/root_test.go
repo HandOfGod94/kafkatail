@@ -28,9 +28,14 @@ func TestValidations_Errors(t *testing.T) {
 			want:    `required flag(s) "bootstrap_servers" not set`,
 		},
 		{
-			desc:    "wire_format can only be one of proto or plaintext",
+			desc:    "wire_format can only be one of proto, plaintext or avro",
 			cmdArgs: []string{"--bootstrap_servers=localhost:9093", "--wire_format=foo", "kafka-test"},
 			want:    `invalid argument "foo" for "--wire_format"`,
+		},
+		{
+			desc:    "schema_file is required if wire_format is 'avro'",
+			cmdArgs: []string{"--bootstrap_servers=localhost:9093", "--wire_format=avro", "kafka-test"},
+			want:    `required flag(s) "schema_file" not set`,
 		},
 		{
 			desc:    "proto_file is required if wire_format is 'proto'",

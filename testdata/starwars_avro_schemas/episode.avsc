@@ -1,0 +1,5 @@
+{
+  "name": "episode",
+  "type": "enum",
+  "symbols": ["NEWHOPE", "EMPIRE", "JEDI"]
+}

@@ -1,0 +1,5 @@
+{
+  "name": "species",
+  "type": "enum",
+  "symbols": ["HUMAN", "DROID"]
+}
