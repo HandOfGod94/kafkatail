@@ -1,0 +1,10 @@
+{
+  "name": "character",
+  "type": "record",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "name", "type": "string"},
+    {"name": "friends", "type": ["null",  {"type": "array", "items": "character"}]},
+    {"name": "appearsIn", "type": {"type": "array", "items": "episode"}}
+  ]
+}
