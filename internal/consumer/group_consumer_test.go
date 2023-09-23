@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/handofgod94/kafkatail/consumer"
+	"github.com/handofgod94/kafkatail/internal/consumer"
+	"github.com/handofgod94/kafkatail/internal/wire"
 	"github.com/handofgod94/kafkatail/kafkatest"
-	"github.com/handofgod94/kafkatail/wire"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"

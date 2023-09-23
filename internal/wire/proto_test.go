@@ -3,8 +3,8 @@ package wire_test
 import (
 	"testing"
 
+	"github.com/handofgod94/kafkatail/internal/wire"
 	"github.com/handofgod94/kafkatail/testdata"
-	"github.com/handofgod94/kafkatail/wire"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"

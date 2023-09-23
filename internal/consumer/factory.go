@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/handofgod94/kafkatail/wire"
+	"github.com/handofgod94/kafkatail/internal/wire"
 	"github.com/samber/mo"
 )
 

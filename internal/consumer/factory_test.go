@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/handofgod94/kafkatail/consumer"
-	"github.com/handofgod94/kafkatail/wire"
+	"github.com/handofgod94/kafkatail/internal/consumer"
+	"github.com/handofgod94/kafkatail/internal/wire"
 	"github.com/samber/mo"
 	"github.com/stretchr/testify/assert"
 )

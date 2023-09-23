@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/handofgod94/kafkatail/consumer"
+	"github.com/handofgod94/kafkatail/internal/consumer"
 	"github.com/segmentio/kafka-go"
 )
 

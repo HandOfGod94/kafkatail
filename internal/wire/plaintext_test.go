@@ -3,7 +3,7 @@ package wire_test
 import (
 	"testing"
 
-	"github.com/handofgod94/kafkatail/wire"
+	"github.com/handofgod94/kafkatail/internal/wire"
 	"github.com/stretchr/testify/assert"
 )
 
